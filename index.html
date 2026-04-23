@@ -49,6 +49,39 @@
     padding: 36px 24px 72px;
   }
 
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
   .article {
     background: var(--paper);
     border: 1px solid var(--border);
@@ -178,6 +211,19 @@
 
   .callout p:last-child { margin-bottom: 0; }
   @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
     .article {
       padding: 28px 18px;
       border-radius: 16px;
@@ -224,6 +270,10 @@
 </head>
 <body>
   <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html" aria-current="page">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+    </nav>
     <article class="article">
       <header>
         <h1>AWS IAM: The Complete Guide for SAA-C03</h1>
