@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS IAM Explained</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --teal: #0d6f67;
+    --teal-soft: rgba(13, 111, 103, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .eyebrow {
+    font: 700 11px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0 0 22px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font: 700 11px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font: 700 20px/1.35 "Helvetica Neue", Arial, sans-serif;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  pre {
+    margin: 18px 0 22px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    background: #f3ede3;
+    border: 1px solid #e2d8c7;
+    border-radius: 14px;
+    color: #2f2a22;
+    font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  blockquote {
+    margin: 30px 0;
+    padding: 8px 0 8px 22px;
+    border-left: 3px solid var(--accent);
+    color: var(--text-dim);
+  }
+
+  blockquote p:last-child { margin-bottom: 0; }
+
+  .callout,
+  .example {
+    margin: 28px 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+
+  .callout {
+    background: var(--accent-soft);
+  }
+
+  .example {
+    background: var(--teal-soft);
+    border-color: rgba(13, 111, 103, 0.18);
+  }
+
+  .box-label {
+    font: 700 11px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+  }
+
+  .example p,
+  .callout p {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .example p:last-child,
+  .callout p:last-child {
+    margin-bottom: 0;
+  }
+
+  .principles-list {
+    margin-left: 0;
+    list-style: none;
+  }
+
+  .principles-list li {
+    margin-bottom: 18px;
+    color: var(--text-dim);
+  }
+
+  .principles-list strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 17px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  .divider {
+    margin: 40px 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  .summary-list li {
+    color: var(--text);
+  }
+
+  footer {
+    margin-top: 36px;
+    color: var(--text-faint);
+    font: 700 11px/1.4 "Helvetica Neue", Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 768px) {
+    .article {
+      padding: 32px 24px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 19px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+
+    li {
+      font-size: 17px;
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <article class="article">
+      <header>
+        <div class="eyebrow">AWS identity and access management</div>
+        <h1>AWS IAM, explained like an article instead of a cheat sheet</h1>
+        <p class="deck">
+          IAM is the system that decides <strong>who</strong> can do <strong>what</strong>
+          in AWS. If S3, EC2, Lambda, DynamoDB, and your own engineers are all actors
+          inside AWS, IAM is the rulebook that controls access between them.
+        </p>
+        <div class="meta">
+          <span>For personal revision</span>
+          <span>Medium-style reading layout</span>
+          <span>Focused on concepts and examples</span>
+        </div>
+      </header>
+
+      <section id="what-is-iam">
+        <h2>What is IAM, really?</h2>
+        <p>
+          IAM stands for <strong>Identity and Access Management</strong>. In practical
+          terms, it answers two questions every time something tries to act in AWS:
+        </p>
+        <ol>
+          <li><strong>Who is making this request?</strong></li>
+          <li><strong>Is this request allowed?</strong></li>
+        </ol>
+        <p>
+          That “something” might be a human user opening the AWS console, an EC2
+          instance trying to read from S3, a Lambda function writing to DynamoDB,
+          or one AWS account trying to access a resource in another account.
+        </p>
+        <blockquote>
+          <p>
+            A good way to think about IAM is this: AWS services do not trust each
+            other automatically. Access must be granted explicitly.
+          </p>
+        </blockquote>
+      </section>
+
+      <section id="core-objects">
+        <h2>The core IAM objects: users, roles, and policies</h2>
+
+        <h3>Users</h3>
+        <p>
+          A <strong>user</strong> is a long-term identity, usually representing a human
+          or sometimes an older application that still uses access keys. Users can
+          have a console password, access keys, or both.
+        </p>
+        <div class="example">
+          <div class="box-label">Example</div>
+          <p>
+            If you log into the AWS console with your own email-backed account and
+            click around S3, EC2, or IAM itself, that activity is typically happening
+            as an IAM user or a federated identity mapped into IAM permissions.
+          </p>
+        </div>
+
+        <h3>Groups</h3>
+        <p>
+          A <strong>group</strong> is just a way to collect users and attach the same
+          permissions to all of them. Groups are useful for human administration, but
+          they are not identities by themselves. You cannot sign in “as a group.”
+        </p>
+
+        <h3>Roles</h3>
+        <p>
+          A <strong>role</strong> is a temporary identity that can be assumed. This is
+          the object that matters most for modern AWS architecture because services
+          like EC2 and Lambda normally use roles rather than hard-coded credentials.
+        </p>
+        <p>
+          Roles do not have long-term passwords or access keys attached in the same
+          way users do. Instead, AWS issues temporary credentials through STS when a
+          trusted principal assumes the role.
+        </p>
+        <div class="example">
+          <div class="box-label">Example</div>
+          <p>
+            If an EC2 instance needs to read from an S3 bucket, the recommended setup
+            is not to store AWS keys on the server. Instead, attach a role to the
+            instance, let EC2 assume that role, and let AWS provide temporary
+            credentials automatically.
+          </p>
+        </div>
+
+        <h3>Policies</h3>
+        <p>
+          A <strong>policy</strong> is the JSON document that defines permissions.
+          Policies answer questions like:
+        </p>
+        <ul>
+          <li>Can this identity call <code>s3:GetObject</code>?</li>
+          <li>Can this Lambda function write to DynamoDB?</li>
+          <li>Can this principal assume a role?</li>
+        </ul>
+        <p>
+          In IAM, policies are the language of authorization. They can allow or deny
+          actions, and AWS evaluates them together to reach a decision.
+        </p>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Why roles matter more than users in cloud architecture</h2>
+        <p>
+          In a real AWS system, most access is not human-to-service. It is
+          service-to-service. That means the most common IAM design question is not
+          “which user should get this permission?” but rather:
+        </p>
+        <blockquote>
+          <p>
+            Which service or workload should assume a role, and what should that role
+            be allowed to do?
+          </p>
+        </blockquote>
+        <p>
+          That is why roles are central. They are the clean way to let workloads act
+          inside AWS without embedding secrets.
+        </p>
+      </section>
+
+      <section id="service-access">
+        <h2>How one AWS service accesses another</h2>
+        <p>
+          The most common pattern is: <strong>a service assumes a role, then uses the
+          permissions on that role to call another service.</strong>
+        </p>
+
+        <h3>Example: EC2 accesses S3</h3>
+        <p>The flow looks like this:</p>
+        <ol>
+          <li>You create a role, for example <code>S3AccessRole</code>.</li>
+          <li>You attach a <strong>trust policy</strong> that allows EC2 to assume it.</li>
+          <li>You attach a <strong>permissions policy</strong> that allows S3 actions like <code>s3:GetObject</code>.</li>
+          <li>You attach the role to the EC2 instance.</li>
+          <li>The EC2 instance receives temporary credentials and uses them to call S3.</li>
+        </ol>
+
+        <div class="callout">
+          <div class="box-label">Key distinction</div>
+          <p>
+            The <strong>trust policy</strong> answers: who is allowed to assume this role?
+            The <strong>permissions policy</strong> answers: what can the role do once it
+            has been assumed?
+          </p>
+        </div>
+
+        <h3>Example trust policy</h3>
+        <p>
+          This trust policy lives on the role itself. It says EC2 is allowed to assume
+          the role.
+        </p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}</pre>
+
+        <h3>Example permissions policy</h3>
+        <p>
+          This permissions policy also attaches to the role, but it does a different
+          job. It defines what the role can do after EC2 has assumed it.
+        </p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::my-app-bucket",
+        "arn:aws:s3:::my-app-bucket/*"
+      ]
+    }
+  ]
+}</pre>
+
+        <h3>Example: Lambda writes to DynamoDB</h3>
+        <p>
+          This is the same pattern with a different trusted service. The role’s trust
+          policy allows <code>lambda.amazonaws.com</code>, and the permissions policy
+          allows the DynamoDB actions the function needs, such as
+          <code>dynamodb:PutItem</code>.
+        </p>
+      </section>
+
+      <section id="resource-policy">
+        <h2>What is a resource policy?</h2>
+        <p>
+          A <strong>resource policy</strong> is a policy attached to the resource itself
+          instead of to the caller. That means the bucket, queue, or key is stating
+          who is allowed to access it.
+        </p>
+        <p>
+          Not every AWS service supports resource policies, but when they do exist,
+          they are especially important for cross-account access because the target
+          resource can explicitly trust a principal from somewhere else.
+        </p>
+        <div class="callout">
+          <div class="box-label">Simple distinction</div>
+          <p>
+            Identity policy: attached to a user or role, describing what that identity
+            is allowed to do. Resource policy: attached to the target resource,
+            describing who may access that resource.
+          </p>
+        </div>
+
+        <h3>Example: S3 bucket policy</h3>
+        <p>
+          This bucket policy is a resource policy. It lives on the S3 bucket and allows
+          a specific role to read objects from that bucket.
+        </p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::111122223333:role/S3AccessRole"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-app-bucket/*"
+    }
+  ]
+}</pre>
+        <p>
+          In same-account access, you often do not need a bucket policy if the role’s
+          identity policy already grants access. In cross-account access, the bucket
+          policy is often the missing piece that makes the whole request succeed.
+        </p>
+      </section>
+
+      <section id="core-principles">
+        <h2>Core principles first</h2>
+        <p>
+          Before the scenarios, lock in these five principles. Every scenario below is
+          just an application of them.
+        </p>
+        <ul class="principles-list">
+          <li>
+            <strong>Principle 1 — The role is always the middleman.</strong>
+            No AWS service like EC2 or Lambda ever holds permissions directly. It
+            assumes a role, and the role holds the permissions. Think of the role as a
+            uniform that grants access and the service puts it on temporarily.
+          </li>
+          <li>
+            <strong>Principle 2 — Every role has exactly two policies.</strong>
+            A trust policy defines who is allowed to assume the role, and a permissions
+            policy defines what the role can do once assumed. The trust policy is the
+            lock. The permissions policy is the key to what is inside.
+          </li>
+          <li>
+            <strong>Principle 3 — Trust policies always live on the role, never on the caller.</strong>
+            EC2 does not say “I trust this role.” The role says “I trust EC2.” This is
+            the most common source of confusion and one of the most tested IAM ideas.
+          </li>
+          <li>
+            <strong>Principle 4 — Same account vs cross-account changes everything about resource policies.</strong>
+            For same-account access, an identity policy alone is sufficient. For
+            cross-account access, both the identity side and the resource side must
+            explicitly allow. A missing bucket policy in the target account is an
+            instant Access Denied.
+          </li>
+          <li>
+            <strong>Principle 5 — Cross-account role assumption requires a handshake from both sides.</strong>
+            Account A needs permission to call <code>sts:AssumeRole</code> on Account B’s
+            role, and Account B’s role needs a trust policy that names Account A’s role
+            as trusted. Neither side alone is enough.
+          </li>
+        </ul>
+      </section>
+
+      <section id="principal-field">
+        <h2>The Principal field — know these cold</h2>
+        <p>
+          When you write a trust policy, the <code>Principal</code> field is what
+          changes between scenarios. These are the values you use most often.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Who is assuming the role</th>
+              <th>Principal value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EC2 service</td>
+              <td><code>"Service": "ec2.amazonaws.com"</code></td>
+            </tr>
+            <tr>
+              <td>Lambda service</td>
+              <td><code>"Service": "lambda.amazonaws.com"</code></td>
+            </tr>
+            <tr>
+              <td>A specific IAM role (cross-account)</td>
+              <td><code>"AWS": "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"</code></td>
+            </tr>
+            <tr>
+              <td>A specific IAM user</td>
+              <td><code>"AWS": "arn:aws:iam::ACCOUNT_ID:user/USERNAME"</code></td>
+            </tr>
+            <tr>
+              <td>All principals in an AWS organization</td>
+              <td><code>"AWS": "*"</code> with condition <code>aws:PrincipalOrgID</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="scenarios-reference">
+        <h2>Scenarios reference</h2>
+
+        <h3>Scenario 1 — EC2 accessing S3 in the same account</h3>
+        <p>
+          <strong>Where you create the role:</strong> Account A, where both EC2 and S3
+          live. <strong>What you create:</strong> one IAM role attached to EC2 through an
+          instance profile.
+        </p>
+        <p><strong>Trust policy — on the role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "ec2.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p>
+          This says: “I, this role, trust the EC2 service to assume me.” EC2
+          automatically assumes this role when the instance starts. The instance profile
+          is the container that connects the role to the EC2 instance.
+        </p>
+        <p><strong>Permissions policy — on the same role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ],
+    "Resource": [
+      "arn:aws:s3:::my-bucket",
+      "arn:aws:s3:::my-bucket/*"
+    ]
+  }]
+}</pre>
+        <p>
+          The two resource lines matter: <code>arn:aws:s3:::my-bucket</code> covers
+          <code>ListBucket</code>, and <code>arn:aws:s3:::my-bucket/*</code> covers
+          object-level actions. Missing one of them causes partial failures.
+        </p>
+        <p>
+          <strong>S3 bucket policy:</strong> not required. Same-account access works if
+          the identity policy allows it. The app gets temporary credentials
+          automatically from the instance metadata endpoint.
+        </p>
+
+        <h3>Scenario 2 — EC2 accessing S3 in a different AWS account</h3>
+        <p>
+          <strong>Where you create things:</strong> a role in Account A where EC2 lives,
+          and a bucket policy in Account B where S3 lives. No role is needed in
+          Account B because S3 supports resource-based policies directly.
+        </p>
+        <p><strong>Trust policy — on the role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "ec2.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p>
+          This trust policy is identical to the same-account scenario. The caller is
+          still EC2. What changes is the resource location and the need for a bucket
+          policy in the target account.
+        </p>
+        <p><strong>Permissions policy — on the role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:ListBucket"
+    ],
+    "Resource": [
+      "arn:aws:s3:::account-b-bucket",
+      "arn:aws:s3:::account-b-bucket/*"
+    ]
+  }]
+}</pre>
+        <p><strong>Bucket policy — on the S3 bucket in Account B:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "AWS": "arn:aws:iam::111111111111:role/EC2-S3-Role"
+    },
+    "Action": [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:ListBucket"
+    ],
+    "Resource": [
+      "arn:aws:s3:::account-b-bucket",
+      "arn:aws:s3:::account-b-bucket/*"
+    ]
+  }]
+}</pre>
+        <p>
+          This is Account B explicitly opening the door to Account A’s specific role.
+          Without this, you get Access Denied regardless of what Account A’s identity
+          policy says.
+        </p>
+
+        <h3>Scenario 3 — Lambda accessing DynamoDB in the same account</h3>
+        <p>
+          <strong>Where you create the role:</strong> Account A, same account as Lambda
+          and DynamoDB. <strong>What you create:</strong> one execution role attached to
+          the Lambda function.
+        </p>
+        <p><strong>Trust policy — on the execution role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "lambda.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p><strong>Permissions policy — on the execution role in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/Orders"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:*"
+    }
+  ]
+}</pre>
+        <p>
+          The only trust-policy difference from EC2 is
+          <code>lambda.amazonaws.com</code> instead of <code>ec2.amazonaws.com</code>.
+          Also note the CloudWatch Logs permissions, which every Lambda execution role
+          should have.
+        </p>
+
+        <h3>Scenario 4 — Lambda accessing DynamoDB in a different account</h3>
+        <p>
+          <strong>Where you create things:</strong> an execution role in Account A and a
+          cross-account role in Account B. DynamoDB is accessed via role assumption, not
+          a bucket-style resource policy.
+        </p>
+        <p><strong>Trust policy — on LambdaExecRole in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "lambda.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p><strong>Permissions policy — on LambdaExecRole in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::222222222222:role/DynamoDBCrossAcctRole"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:*:*:*"
+    }
+  ]
+}</pre>
+        <p><strong>Trust policy — on DynamoDBCrossAcctRole in Account B:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "AWS": "arn:aws:iam::111111111111:role/LambdaExecRole"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p><strong>Permissions policy — on DynamoDBCrossAcctRole in Account B:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query"
+    ],
+    "Resource": "arn:aws:dynamodb:us-east-1:222222222222:table/SharedOrders"
+  }]
+}</pre>
+        <p>
+          Here the Lambda code must call <code>sts:AssumeRole</code> explicitly,
+          receive temporary credentials, and then use those credentials to create a
+          DynamoDB client for Account B.
+        </p>
+
+        <h3>Scenario 5 — Lambda accessing EC2 in a different account</h3>
+        <p>
+          This is structurally identical to Scenario 4. The only real difference is
+          that Account B’s role grants EC2 actions instead of DynamoDB actions.
+        </p>
+        <p><strong>Trust policy — on LambdaExecRole in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "Service": "lambda.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p><strong>Permissions policy — on LambdaExecRole in Account A:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::222222222222:role/EC2ManagementRole"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:*:*:*"
+    }
+  ]
+}</pre>
+        <p><strong>Trust policy — on EC2ManagementRole in Account B:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": {
+      "AWS": "arn:aws:iam::111111111111:role/LambdaExecRole"
+    },
+    "Action": "sts:AssumeRole"
+  }]
+}</pre>
+        <p><strong>Permissions policy — on EC2ManagementRole in Account B:</strong></p>
+<pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "ec2:StopInstances",
+      "ec2:StartInstances",
+      "ec2:DescribeInstances",
+      "ec2:RebootInstances"
+    ],
+    "Resource": "*"
+  }]
+}</pre>
+        <p>
+          EC2 often requires <code>Resource: "*"</code> for many API calls. Least
+          privilege usually comes from conditions, such as restricting by instance tags.
+        </p>
+
+        <h3>Comparison summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Role in Account A</th>
+              <th>Role in Account B</th>
+              <th>Resource policy</th>
+              <th><code>sts:AssumeRole</code> in code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EC2 → S3 same account</td>
+              <td>Yes — EC2 trust</td>
+              <td>No</td>
+              <td>Optional</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>EC2 → S3 cross account</td>
+              <td>Yes — EC2 trust</td>
+              <td>No</td>
+              <td>Yes — mandatory</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>Lambda → DynamoDB same</td>
+              <td>Yes — Lambda trust</td>
+              <td>No</td>
+              <td>Not supported</td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td>Lambda → DynamoDB cross</td>
+              <td>Yes — Lambda trust</td>
+              <td>Yes — named role ARN trust</td>
+              <td>Not applicable</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>Lambda → EC2 cross</td>
+              <td>Yes — Lambda trust</td>
+              <td>Yes — named role ARN trust</td>
+              <td>Not applicable</td>
+              <td>Yes</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          The unifying pattern is simple:
+        </p>
+        <ul>
+          <li>Same account + service with resource policy support like S3: identity policy is enough, resource policy optional.</li>
+          <li>Same account + service without resource policy support like DynamoDB or EC2: identity policy is enough.</li>
+          <li>Cross account + service with resource policy support like S3: identity policy in A plus resource policy in B.</li>
+          <li>Cross account + service without resource policy support like DynamoDB or EC2: role in A with <code>sts:AssumeRole</code>, role in B with trust for A’s role, and an explicit AssumeRole call in code.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Why trust policies confuse people</h2>
+        <p>
+          A common mistake is assuming the calling service should define the trust.
+          It does not. The trust policy lives on the <strong>role being assumed</strong>.
+        </p>
+        <div class="callout">
+          <div class="box-label">Useful mental model</div>
+          <p>
+            Think of a role as a uniform hanging in a cabinet. The trust policy is
+            the lock on that cabinet. The entity trying to wear the uniform does not
+            define the lock. The role does.
+          </p>
+        </div>
+      </section>
+
+      <section id="organizations">
+        <h2>What is AWS Organizations?</h2>
+        <p>
+          <strong>AWS Organizations</strong> is the service used to manage multiple AWS
+          accounts together as one governed structure. Instead of treating every AWS
+          account as an isolated island, Organizations lets you group accounts under
+          one management layer.
+        </p>
+        <p>
+          This is useful when a company has separate accounts for production, staging,
+          security, analytics, or different teams. Rather than configuring everything
+          separately in each account, Organizations lets you apply broad governance
+          rules at a higher level.
+        </p>
+        <div class="example">
+          <div class="box-label">Example</div>
+          <p>
+            A company may have one organization with a root, then organizational units
+            such as <strong>Production</strong>, <strong>Sandbox</strong>, and
+            <strong>Security</strong>. Each OU can contain multiple AWS accounts.
+          </p>
+        </div>
+        <p>
+          The most important IAM-related concept inside AWS Organizations is the
+          <strong>Service Control Policy</strong>, or <strong>SCP</strong>.
+        </p>
+      </section>
+
+      <section id="permission-layers">
+        <h2>The different layers of permissions in AWS</h2>
+        <p>
+          One reason IAM feels confusing is that AWS permissions do not come from one
+          single place. Access can be shaped by multiple layers at once. The clean way
+          to think about them is from <strong>outer boundary</strong> to
+          <strong>inner permission</strong>.
+        </p>
+
+        <h3>1. Service Control Policies (SCPs)</h3>
+        <p>
+          An <strong>SCP</strong> is part of AWS Organizations. It does not grant
+          permissions by itself. Instead, it sets the maximum boundary for what
+          accounts inside the organization are allowed to do.
+        </p>
+        <p>
+          If an SCP denies an action, then no IAM user or role inside that account can
+          bypass it, even if their own IAM policy says Allow.
+        </p>
+        <div class="callout">
+          <div class="box-label">Important rule</div>
+          <p>
+            SCPs are guardrails, not permission grants. They define what is possible at
+            the account or OU level.
+          </p>
+        </div>
+        <div class="example">
+          <div class="box-label">Example</div>
+          <p>
+            If an SCP denies <code>ec2:TerminateInstances</code> in the Production OU,
+            then even an administrator role in a production account cannot terminate an
+            instance unless the SCP is changed.
+          </p>
+        </div>
+
+        <h3>2. Permission boundaries</h3>
+        <p>
+          A <strong>permission boundary</strong> is attached to a user or role and
+          limits the maximum permissions that identity can ever have. Like SCPs, it is
+          a ceiling, not a direct grant.
+        </p>
+        <p>
+          This is useful when you want to delegate IAM creation to teams, but still
+          prevent them from creating overly powerful roles.
+        </p>
+
+        <h3>3. Identity-based policies</h3>
+        <p>
+          These are the regular IAM policies attached to users, groups, or roles. This
+          is the layer most people think of first when they hear “IAM policy.”
+        </p>
+        <p>
+          Identity policies are what usually grant day-to-day permissions like
+          <code>s3:GetObject</code>, <code>dynamodb:PutItem</code>, or
+          <code>ec2:DescribeInstances</code>.
+        </p>
+
+        <h3>4. Resource-based policies</h3>
+        <p>
+          These live on the resource itself, such as an S3 bucket policy, an SQS queue
+          policy, or a KMS key policy. They matter a lot in cross-account access
+          because the target resource can explicitly say who is trusted.
+        </p>
+
+        <h3>5. Session policies and temporary credentials</h3>
+        <p>
+          When a role is assumed, AWS can also apply session-level restrictions. These
+          matter less for basic understanding, but they are another layer that can make
+          effective permissions narrower than expected.
+        </p>
+
+        <h3>How these layers combine</h3>
+        <p>
+          The practical rule is: <strong>effective permissions are the intersection of
+          what all the limiting layers allow, minus anything explicitly denied.</strong>
+        </p>
+        <ul>
+          <li>SCP says what the account can ever do.</li>
+          <li>Permission boundary says what the identity can ever do.</li>
+          <li>Identity policy says what the identity is trying to do.</li>
+          <li>Resource policy may also need to allow access.</li>
+          <li>Any explicit deny at any layer can stop the request.</li>
+        </ul>
+        <div class="example">
+          <div class="box-label">Concrete example</div>
+          <p>
+            Imagine a role has an IAM policy allowing <code>s3:GetObject</code>. If the
+            organization SCP denies all S3 actions, the request still fails. If the SCP
+            allows S3 but the bucket policy does not trust that role in a cross-account
+            case, the request still fails. The final answer is never based on just one
+            policy document.
+          </p>
+        </div>
+      </section>
+
+      <section id="advanced-domains">
+        <h2>Five advanced domains that move you from concepts to exam readiness</h2>
+        <p>
+          To move from conceptual understanding to SAA-C03 readiness, you need to know
+          a few IAM-adjacent topics that show up in architecture scenarios. They are
+          not always the headline of the question, but they often decide which answer is
+          correct.
+        </p>
+
+        <h3>1. The metadata security layer: IMDSv1 vs IMDSv2</h3>
+        <p>
+          EC2 instances retrieve temporary credentials from the Instance Metadata
+          Service at <code>169.254.169.254</code>. That is powerful, but it also creates
+          a security question: how easy is it for a process on the server to reach that
+          endpoint?
+        </p>
+        <p>
+          <strong>IMDSv1</strong> uses a simple request-response model. A process can run
+          something like <code>curl http://169.254.169.254/latest/meta-data/</code> and
+          start retrieving information directly.
+        </p>
+        <p>
+          <strong>IMDSv2</strong> is session-oriented. The caller must first do a
+          <code>PUT</code> request to obtain a temporary session token, then supply that
+          token on subsequent metadata requests.
+        </p>
+        <div class="callout">
+          <div class="box-label">Exam trigger</div>
+          <p>
+            If a question mentions SSRF attacks, hardening instance metadata, or making
+            metadata access more secure, the intended answer is usually to enforce
+            IMDSv2 by setting <code>HttpTokens</code> to <code>required</code>.
+          </p>
+        </div>
+
+        <h3>2. IAM Identity Center and centralized governance</h3>
+        <p>
+          In a multi-account AWS environment, you usually do not manage separate IAM
+          users inside every account. Instead, you use <strong>IAM Identity Center</strong>
+          to centralize workforce access.
+        </p>
+        <p>
+          IAM Identity Center connects AWS to an identity source such as Okta, Azure AD,
+          or Active Directory using federation standards like <strong>SAML 2.0</strong>.
+          You define <strong>permission sets</strong> centrally, assign them to users or
+          groups for specific accounts, and AWS creates the matching IAM roles in those
+          member accounts automatically.
+        </p>
+        <div class="example">
+          <div class="box-label">Exam trigger</div>
+          <p>
+            If the scenario says “centrally manage access to multiple AWS accounts” or
+            “let employees use existing corporate credentials to access AWS,” think IAM
+            Identity Center rather than manually creating IAM users in each account.
+          </p>
+        </div>
+
+        <h3>3. Advanced auditing and troubleshooting tools</h3>
+        <p>
+          SAA-C03 expects you to know not only how to grant access, but also how to
+          reduce, validate, and audit it.
+        </p>
+        <ul>
+          <li><strong>IAM Access Advisor</strong>: shows when a service was last used by an identity. This helps identify unused permissions.</li>
+          <li><strong>IAM Access Analyzer</strong>: inspects resource-based policies and alerts on unintended public or cross-account access.</li>
+          <li><strong>IAM Policy Simulator</strong>: lets you test whether a policy would allow or deny an action before relying on it in production.</li>
+          <li><strong>Credential Report</strong>: generates an account-wide CSV showing password age, access key age, and MFA status.</li>
+        </ul>
+        <div class="callout">
+          <div class="box-label">Least-privilege angle</div>
+          <p>
+            If the question is about identifying unused permissions, Access Advisor is
+            the clue. If the question is about detecting public or external exposure
+            from a bucket or KMS key, Access Analyzer is the clue.
+          </p>
+        </div>
+
+        <h3>4. The KMS resource-policy exception</h3>
+        <p>
+          KMS is a common exam trap because it behaves differently from the “same-account
+          access usually works with identity policy alone” pattern.
+        </p>
+        <p>
+          With S3, a same-account IAM user with enough permissions can often access the
+          bucket even if the bucket has no bucket policy. With <strong>KMS</strong>, the
+          <strong>key policy</strong> is mandatory. If the key policy does not trust the
+          principal or the account root appropriately, even an administrator can receive
+          Access Denied when trying to use the key.
+        </p>
+        <div class="example">
+          <div class="box-label">Exam trigger</div>
+          <p>
+            If an administrator appears to have full IAM permissions but still cannot
+            decrypt data or use a KMS key, the missing piece is often the key policy.
+          </p>
+        </div>
+
+        <h3>5. Amazon Cognito and external identity</h3>
+        <p>
+          IAM is mainly for your workforce, workloads, and AWS-managed service access.
+          <strong>Amazon Cognito</strong> is for the users of the applications you build.
+        </p>
+        <p>
+          <strong>Cognito User Pools</strong> handle authentication: sign-up, sign-in,
+          and token issuance. They return JWTs. <strong>Cognito Identity Pools</strong>
+          handle authorization into AWS: they take an authenticated identity and
+          exchange it for temporary IAM credentials.
+        </p>
+        <div class="example">
+          <div class="box-label">Exam trigger</div>
+          <p>
+            If a question asks how mobile or web users can sign in with Google or
+            Facebook and then upload files directly to S3, the expected pattern is
+            Cognito for identity plus temporary IAM credentials for AWS access.
+          </p>
+        </div>
+
+        <h3>Summary checklist for SAA-C03</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Keywords to watch for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>IMDSv2</td>
+              <td>SSRF protection, token-based, <code>HttpTokens=required</code></td>
+            </tr>
+            <tr>
+              <td>Identity Center</td>
+              <td>Multiple accounts, SSO, SAML 2.0, permission sets</td>
+            </tr>
+            <tr>
+              <td>Access Advisor</td>
+              <td>Identify unused permissions, least privilege</td>
+            </tr>
+            <tr>
+              <td>Access Analyzer</td>
+              <td>Detect public or cross-account exposure</td>
+            </tr>
+            <tr>
+              <td>KMS key policy</td>
+              <td>Mandatory for access, root account trust, admin still denied</td>
+            </tr>
+            <tr>
+              <td>Cognito</td>
+              <td>Web or mobile users, social login, JWT to IAM exchange</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="cross-account">
+        <h2>What changes in cross-account access</h2>
+        <p>
+          Cross-account access adds one more layer of thinking because now you have
+          two security boundaries: the source account and the target account.
+        </p>
+        <p>
+          Suppose an EC2 instance in <strong>Account A</strong> needs to access an S3
+          bucket in <strong>Account B</strong>. In that case, it is not enough for
+          Account A to “want” access. Account B must also explicitly allow it.
+        </p>
+        <div class="example">
+          <div class="box-label">Cross-account example</div>
+          <p>
+            Account A may use a role with permission to access the bucket, but the
+            bucket policy in Account B must still allow that principal. Cross-account
+            access is usually a handshake, not a one-sided permission grant.
+          </p>
+        </div>
+        <p>
+          This is one of the most important IAM habits to build: whenever the request
+          crosses accounts, ask yourself which side is granting access and whether
+          both sides of the path are configured.
+        </p>
+      </section>
+
+      <section>
+        <h2>How AWS decides: the basic evaluation idea</h2>
+        <p>
+          IAM can feel complex because many policy types can be involved at once:
+          identity policies, resource policies, permission boundaries, and even
+          organization-level SCPs.
+        </p>
+        <p>
+          But the core rule is simple:
+        </p>
+        <ul class="summary-list">
+          <li><strong>Explicit deny wins.</strong></li>
+          <li><strong>If nothing allows the action, the result is implicit deny.</strong></li>
+        </ul>
+        <p>
+          Most IAM debugging comes down to finding where the deny is happening or
+          where the expected allow is missing. In other words, IAM decisions are not
+          only about what one role says it can do, but also about what the surrounding
+          governance layers permit.
+        </p>
+      </section>
+
+      <section id="mental-model">
+        <h2>A practical mental model for revising IAM quickly</h2>
+        <p>
+          If you want to remember IAM without memorizing scattered facts, use this
+          sequence whenever you look at a scenario:
+        </p>
+        <ol>
+          <li><strong>Identify the actor.</strong> Who is making the request?</li>
+          <li><strong>Identify the target.</strong> Which service or resource is being accessed?</li>
+          <li><strong>Check whether a role is involved.</strong> Most service access uses roles.</li>
+          <li><strong>Check trust.</strong> Is the actor allowed to assume the role?</li>
+          <li><strong>Check permissions.</strong> Once assumed, can that role call the needed actions?</li>
+          <li><strong>If cross-account, check both sides.</strong></li>
+        </ol>
+        <div class="callout">
+          <div class="box-label">Short version</div>
+          <p>
+            IAM is usually not hard because the JSON is hard. It is hard because
+            people mix up identity, trust, permissions, and resource ownership.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Final takeaway</h2>
+        <p>
+          IAM is the control layer behind almost every meaningful AWS interaction.
+          Users are long-term identities. Roles are temporary identities. Policies
+          define permissions. Trust policies decide who can assume a role. And once
+          you understand how one service assumes a role to reach another service,
+          most AWS IAM questions start to look like variations of the same pattern.
+        </p>
+        <p>
+          That is the level you want for revision: not isolated facts, but one
+          reusable mental model.
+        </p>
+      </section>
+
+      <footer>
+        Personal IAM reading page. IAM is global, explicit deny wins, and trust lives on the role.
+      </footer>
+    </article>
+  </main>
+</body>
+</html>
