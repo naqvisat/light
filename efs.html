@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EFS &amp; FSx: The Complete Guide for SAA-C03</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font: 700 20px/1.35 "Helvetica Neue", Arial, sans-serif;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+  em { color: var(--text-dim); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  pre {
+    margin: 18px 0 22px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    background: #f3ede3;
+    border: 1px solid #e2d8c7;
+    border-radius: 14px;
+    color: #2f2a22;
+    font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 17px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    li {
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 18px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+
+    pre {
+      font-size: 12px;
+      padding: 14px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html" aria-current="page">EFS</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS EFS &amp; FSx: The Complete Guide for SAA-C03</h1>
+        <p class="deck"><em>Everything you need to know about Elastic File System and FSx &mdash; file system types, performance modes, throughput modes, storage classes, lifecycle policies, mount targets, access points, security, on-premises access, FSx variants, EFS vs. EBS vs. S3 comparison, hard limits, and every exam trap &mdash; in one place.</em></p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>What is EFS?</h2>
+        <p>Amazon Elastic File System (EFS) is a <strong>fully managed, serverless, elastic NFS file system</strong> that can be shared across multiple compute resources simultaneously. It uses the <strong>NFS v4.1 protocol</strong> and provides standard file system semantics.</p>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>EFS</th><th>EBS</th><th>S3</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Storage type</strong></td><td>File (NFS)</td><td>Block</td><td>Object</td></tr>
+            <tr><td><strong>Access protocol</strong></td><td>NFS v4.1</td><td>Direct attachment to EC2</td><td>HTTP/HTTPS API</td></tr>
+            <tr><td><strong>Shared access</strong></td><td><strong>Yes</strong></td><td>No (except limited Multi-Attach)</td><td>Yes via API</td></tr>
+            <tr><td><strong>AZ scope</strong></td><td>Multi-AZ or One Zone</td><td><strong>Single AZ</strong></td><td>Regional</td></tr>
+            <tr><td><strong>Scaling</strong></td><td>Automatic</td><td>Manual resize</td><td>Virtually unlimited</td></tr>
+            <tr><td><strong>OS support</strong></td><td><strong>Linux only</strong></td><td>Linux and Windows</td><td>Any</td></tr>
+            <tr><td><strong>Mount</strong></td><td>Mount via NFS</td><td>Attach as block device</td><td>Accessed via API</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Shared file storage</td><td>Single-instance storage</td><td>Object storage</td></tr>
+          </tbody>
+        </table>
+        <p><strong>The one-line decision rule:</strong> Need shared file access across multiple instances? → EFS. Need a high-performance disk for one instance? → EBS. Need to store objects accessible via API? → S3.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Core concepts</h2>
+        <h3>File systems</h3>
+        <p>An EFS file system is the top-level resource.</p>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Durability</th><th>AZ scope</th><th>Cost</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Regional</strong></td><td>11 nines</td><td>Multiple AZs</td><td>Higher</td><td>Production HA workloads</td></tr>
+            <tr><td><strong>One Zone</strong></td><td>11 nines within that AZ</td><td>Single AZ</td><td>~47% cheaper</td><td>Dev/test, re-creatable data</td></tr>
+          </tbody>
+        </table>
+        <p>If the single AZ of a One Zone file system is destroyed, data is lost. Use Regional for anything critical.</p>
+
+        <h3>Mount targets</h3>
+        <p>A mount target is a <strong>network endpoint</strong> in a specific AZ that compute resources use to connect to the file system.</p>
+        <ul>
+          <li><strong>Regional:</strong> Create one mount target per AZ you use.</li>
+          <li><strong>One Zone:</strong> Only one mount target in the same AZ.</li>
+          <li>Each mount target uses a subnet and security group.</li>
+          <li>Security groups must allow inbound <strong>TCP 2049</strong>.</li>
+        </ul>
+
+        <h3>How mounting works</h3>
+<pre># Install the EFS mount helper
+sudo yum install -y amazon-efs-utils
+
+# Mount using the helper
+sudo mount -t efs -o tls fs-0123456789abcdef0:/ /mnt/efs
+
+# Or mount using standard NFS
+sudo mount -t nfs4 -o nfsvers=4.1 fs-0123456789abcdef0.efs.us-east-1.amazonaws.com:/ /mnt/efs</pre>
+        <p><strong>Who can mount EFS:</strong> EC2, ECS/Fargate, EKS, Lambda, and on-premises servers over Direct Connect or VPN.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Storage classes and lifecycle management</h2>
+        <h3>Storage classes</h3>
+        <table>
+          <thead>
+            <tr><th>Storage Class</th><th>Latency</th><th>Cost</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>EFS Standard</strong></td><td>Sub-millisecond</td><td>Highest</td><td>Frequently accessed data</td></tr>
+            <tr><td><strong>EFS Infrequent Access (IA)</strong></td><td>Low double-digit ms</td><td>~92% cheaper</td><td>Accessed a few times per quarter</td></tr>
+            <tr><td><strong>EFS Archive</strong></td><td>Low double-digit ms</td><td>~50% cheaper than IA</td><td>Accessed a few times per year</td></tr>
+          </tbody>
+        </table>
+        <p>Available for both Regional and One Zone file systems.</p>
+
+        <h3>Lifecycle policies (EFS Intelligent-Tiering)</h3>
+        <ol>
+          <li><strong>Transition to IA</strong></li>
+          <li><strong>Transition to Archive</strong></li>
+          <li><strong>Transition back to Standard</strong> (optional)</li>
+        </ol>
+        <ul>
+          <li>Operates at the <strong>file level</strong>.</li>
+          <li>Files smaller than <strong>128 KB</strong> are not transitioned.</li>
+          <li>Accessing IA and Archive incurs a <strong>per-GB retrieval fee</strong>.</li>
+          <li>Archive requires <strong>Elastic throughput</strong>.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Performance modes</h2>
+        <table>
+          <thead>
+            <tr><th>Mode</th><th>Latency</th><th>IOPS</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>General Purpose</strong></td><td>Sub-ms to low single-digit ms</td><td>Up to 250k read / 50k write</td><td>Most workloads</td></tr>
+            <tr><td><strong>Max I/O</strong></td><td>Slightly higher</td><td>Higher aggregate IOPS</td><td>Highly parallelized workloads</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>One Zone always uses <strong>General Purpose</strong>.</li>
+          <li>Elastic throughput is only available with General Purpose.</li>
+          <li>Max I/O is not recommended for new deployments.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Throughput modes</h2>
+        <table>
+          <thead>
+            <tr><th>Mode</th><th>How throughput is determined</th><th>Pay model</th><th>Best for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Elastic</strong></td><td>Scales automatically with activity</td><td>Pay for what you use</td><td>Spiky or unpredictable workloads</td></tr>
+            <tr><td><strong>Provisioned</strong></td><td>You specify a throughput level</td><td>Pay for provisioned amount</td><td>Constant high throughput</td></tr>
+            <tr><td><strong>Bursting</strong></td><td>Scales with file system size</td><td>Included in storage cost</td><td>Small file systems with occasional bursts</td></tr>
+          </tbody>
+        </table>
+        <h3>Elastic throughput</h3>
+        <ul>
+          <li>Recommended for most workloads.</li>
+          <li>Automatically scales up to <strong>1,500 MiB/s</strong>.</li>
+          <li>No burst credits to manage.</li>
+          <li>Reads are metered at one-third the rate of writes.</li>
+        </ul>
+        <h3>Bursting throughput</h3>
+        <ul>
+          <li>Base rate: <strong>50 KiB/s per GiB</strong> of Standard storage.</li>
+          <li>Small file systems get very little baseline throughput.</li>
+        </ul>
+        <h3>Provisioned throughput</h3>
+        <ul>
+          <li>You specify exact throughput.</li>
+          <li>Must wait <strong>24 hours</strong> after increasing before decreasing.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>EFS Access Points</h2>
+        <p>An access point is an <strong>application-specific entry point</strong> into an EFS file system.</p>
+        <ul>
+          <li><strong>Root directory override</strong></li>
+          <li><strong>POSIX user/group override</strong></li>
+          <li><strong>Automatic directory creation</strong></li>
+        </ul>
+        <p>Useful for isolating multiple applications on one file system and for Lambda.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Security</h2>
+        <h3>Encryption</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>How</th><th>Default</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>At rest</strong></td><td>KMS key</td><td>Must be enabled at creation; cannot be enabled later</td></tr>
+            <tr><td><strong>In transit</strong></td><td>TLS 1.2 via mount helper</td><td>Must specify <code>-o tls</code></td></tr>
+          </tbody>
+        </table>
+        <h3>Network security</h3>
+        <p>Security groups on mount targets must allow inbound TCP 2049.</p>
+        <h3>IAM and file system policies</h3>
+        <ul>
+          <li><strong>IAM policies</strong> control API actions.</li>
+          <li><strong>File system policies</strong> control NFS-level access.</li>
+          <li><strong>POSIX permissions</strong> apply to files and directories.</li>
+        </ul>
+        <p>All layers must allow access.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>On-premises access</h2>
+        <p>EFS can be mounted from on-premises servers over <strong>Direct Connect</strong> or <strong>VPN</strong>.</p>
+        <ol>
+          <li>Establish Direct Connect or VPN to the VPC.</li>
+          <li>Create a mount target in the VPC.</li>
+          <li>Mount the file system using the mount target IP.</li>
+        </ol>
+        <p>For migrations, use <strong>AWS DataSync</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>EFS replication</h2>
+        <p>EFS supports <strong>automatic replication</strong> to another Region or another AZ in the same Region.</p>
+        <ul>
+          <li>Destination is a <strong>read-only replica</strong>.</li>
+          <li>Asynchronous with an <strong>RPO of minutes</strong>.</li>
+          <li>Only one replication configuration per file system.</li>
+          <li>Promote destination to read-write during failover.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>EFS with Lambda</h2>
+        <p>Lambda functions can mount EFS when configured in a VPC.</p>
+        <p><strong>Requirements:</strong></p>
+        <ol>
+          <li>Lambda must be attached to a <strong>VPC</strong>.</li>
+          <li>An <strong>EFS access point</strong> must be configured.</li>
+          <li>Lambda security group must allow outbound to the mount target on port 2049.</li>
+          <li>Mount target security group must allow inbound from Lambda on port 2049.</li>
+        </ol>
+        <p>Lambda in a VPC loses internet access, so it may also need NAT or VPC endpoints.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>EFS vs. EBS vs. S3 - complete decision matrix</h2>
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>EFS</th><th>EBS</th><th>S3</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Access pattern</strong></td><td>Shared file access</td><td>Single-instance block device</td><td>Object API</td></tr>
+            <tr><td><strong>Concurrent access</strong></td><td>Thousands of instances</td><td>One instance (limited Multi-Attach)</td><td>Unlimited</td></tr>
+            <tr><td><strong>OS support</strong></td><td>Linux only</td><td>Linux + Windows</td><td>Any</td></tr>
+            <tr><td><strong>Scaling</strong></td><td>Automatic</td><td>Manual</td><td>Automatic</td></tr>
+            <tr><td><strong>AZ scope</strong></td><td>Multi-AZ or One Zone</td><td>Single AZ</td><td>Multi-AZ</td></tr>
+            <tr><td><strong>Max size</strong></td><td>Petabytes</td><td>64 TiB</td><td>Virtually unlimited</td></tr>
+            <tr><td><strong>Latency</strong></td><td>Sub-ms</td><td>Sub-ms</td><td>Milliseconds</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Higher per GB</td><td>Lower per GB</td><td>Lowest per GB</td></tr>
+            <tr><td><strong>Boot volume</strong></td><td>No</td><td>Yes</td><td>No</td></tr>
+            <tr><td><strong>POSIX permissions</strong></td><td>Yes</td><td>Via OS</td><td>No</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Amazon FSx - managed third-party file systems</h2>
+        <h3>FSx for Windows File Server</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Protocol</strong></td><td><strong>SMB</strong></td></tr>
+            <tr><td><strong>OS support</strong></td><td><strong>Windows</strong> (also Linux via SMB)</td></tr>
+            <tr><td><strong>Active Directory</strong></td><td>Full integration</td></tr>
+            <tr><td><strong>Features</strong></td><td>Windows ACLs, DFS, quotas, shadow copies</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Single-AZ or Multi-AZ</td></tr>
+            <tr><td><strong>Storage</strong></td><td>SSD or HDD</td></tr>
+            <tr><td><strong>Capacity</strong></td><td>Provisioned</td></tr>
+          </tbody>
+        </table>
+
+        <h3>FSx for Lustre</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Protocol</strong></td><td>Lustre</td></tr>
+            <tr><td><strong>Performance</strong></td><td>Hundreds of GB/s, millions of IOPS, sub-ms latency</td></tr>
+            <tr><td><strong>S3 integration</strong></td><td>Load on first access, write back results</td></tr>
+            <tr><td><strong>Use case</strong></td><td>HPC, ML training, media processing</td></tr>
+            <tr><td><strong>Deployment types</strong></td><td>Scratch or Persistent</td></tr>
+            <tr><td><strong>Capacity</strong></td><td>Provisioned</td></tr>
+          </tbody>
+        </table>
+
+        <h3>FSx for NetApp ONTAP</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Protocols</strong></td><td>NFS, SMB, iSCSI</td></tr>
+            <tr><td><strong>Features</strong></td><td>Snapshots, clones, tiering, deduplication</td></tr>
+            <tr><td><strong>OS support</strong></td><td>Linux, Windows, macOS</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Enterprise migrations, multi-protocol access</td></tr>
+          </tbody>
+        </table>
+
+        <h3>FSx for OpenZFS</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Protocol</strong></td><td>NFS</td></tr>
+            <tr><td><strong>Features</strong></td><td>ZFS snapshots, clones, compression, up to 1M IOPS</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Linux workloads migrating from on-premises ZFS</td></tr>
+          </tbody>
+        </table>
+
+        <h3>FSx decision table</h3>
+        <table>
+          <thead>
+            <tr><th>Requirement</th><th>Choose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Windows + SMB + Active Directory</td><td><strong>FSx for Windows File Server</strong></td></tr>
+            <tr><td>HPC + ML training + S3 integration</td><td><strong>FSx for Lustre</strong></td></tr>
+            <tr><td>Multi-protocol (NFS + SMB + iSCSI)</td><td><strong>FSx for NetApp ONTAP</strong></td></tr>
+            <tr><td>Linux NFS, ZFS migration</td><td><strong>FSx for OpenZFS</strong></td></tr>
+            <tr><td>Simple shared Linux file storage</td><td><strong>EFS</strong></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>EFS quotas and hard limits</h2>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Limit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>File systems per account per Region</td><td>1,000 (adjustable)</td></tr>
+            <tr><td>Mount targets per file system (Regional)</td><td>One per AZ</td></tr>
+            <tr><td>Mount targets per file system (One Zone)</td><td>One</td></tr>
+            <tr><td>Access points per file system</td><td>1,000</td></tr>
+            <tr><td>Connections per mount target</td><td>Designed for thousands</td></tr>
+            <tr><td>File system size</td><td><strong>Petabytes</strong></td></tr>
+            <tr><td>Maximum individual file size</td><td>52 TiB</td></tr>
+            <tr><td>Maximum file path length</td><td>4,096 bytes</td></tr>
+            <tr><td>Maximum hardlinks per file</td><td>32,000</td></tr>
+            <tr><td>Maximum throughput (Elastic)</td><td>1,500 MiB/s</td></tr>
+            <tr><td>Maximum throughput (Provisioned)</td><td>Up to 3,000+ MiB/s</td></tr>
+            <tr><td>Maximum read IOPS</td><td>250,000 (Standard), 90,000 (IA)</td></tr>
+            <tr><td>Maximum write IOPS</td><td>50,000</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Cost</h2>
+        <h3>EFS pricing model</h3>
+        <p><strong>Pay-per-use</strong> with no provisioning required. Pricing varies by storage class and file system type.</p>
+        <h3>Relative cost</h3>
+        <table>
+          <thead>
+            <tr><th>Storage class</th><th>Relative cost</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>EFS Standard (Regional)</td><td>Highest</td></tr>
+            <tr><td>EFS Standard (One Zone)</td><td>~47% cheaper than Regional Standard</td></tr>
+            <tr><td>EFS IA (Regional)</td><td>~92% cheaper than Regional Standard</td></tr>
+            <tr><td>EFS IA (One Zone)</td><td>~92% cheaper than One Zone Standard</td></tr>
+            <tr><td>EFS Archive</td><td>~50% cheaper than IA</td></tr>
+          </tbody>
+        </table>
+        <h3>Cost optimization strategies</h3>
+        <ol>
+          <li>Enable lifecycle policies.</li>
+          <li>Use One Zone for non-critical data.</li>
+          <li>Use Elastic throughput instead of Provisioned when possible.</li>
+          <li>Monitor with CloudWatch.</li>
+          <li>Use access points instead of unnecessary separate file systems.</li>
+        </ol>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Common exam traps and edge cases</h2>
+        <ol>
+          <li><strong>EFS is Linux only.</strong></li>
+          <li><strong>Encryption at rest cannot be enabled later.</strong></li>
+          <li><strong>Bursting throughput is terrible for small file systems.</strong></li>
+          <li><strong>Performance mode cannot be changed (mostly).</strong></li>
+          <li><strong>EFS is not S3.</strong></li>
+          <li><strong>Security group must allow port 2049.</strong></li>
+          <li><strong>Lambda + EFS requires VPC + access point.</strong></li>
+          <li><strong>One Zone ≠ Multi-AZ.</strong></li>
+          <li><strong>Files &lt; 128 KB are not transitioned.</strong></li>
+          <li><strong>Archive class locks you to Elastic throughput.</strong></li>
+          <li><strong>FSx for Lustre is not EFS.</strong></li>
+          <li><strong>EFS replication destination is read-only.</strong></li>
+        </ol>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick reference: exam keyword -&gt; answer mapping</h2>
+        <table>
+          <thead>
+            <tr><th>Exam keyword/phrase</th><th>Think...</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Shared file storage across multiple EC2 instances</td><td>EFS</td></tr>
+            <tr><td>NFS protocol</td><td>EFS</td></tr>
+            <tr><td>Linux shared file system</td><td>EFS</td></tr>
+            <tr><td>Windows shared file system, SMB, Active Directory</td><td>FSx for Windows File Server</td></tr>
+            <tr><td>HPC, ML training, Lustre, S3 integration</td><td>FSx for Lustre</td></tr>
+            <tr><td>Multi-protocol (NFS + SMB + iSCSI)</td><td>FSx for NetApp ONTAP</td></tr>
+            <tr><td>Reduce EFS costs for infrequently accessed files</td><td>Lifecycle policies to IA/Archive</td></tr>
+            <tr><td>Small EFS file system, slow performance</td><td>Switch to Elastic throughput</td></tr>
+            <tr><td>Mount file system from on-premises</td><td>EFS over Direct Connect/VPN</td></tr>
+            <tr><td>Migrate on-premises NFS data to AWS</td><td>AWS DataSync → EFS</td></tr>
+            <tr><td>Lambda needs shared persistent storage</td><td>EFS with access point + Lambda in VPC</td></tr>
+            <tr><td>Serverless, elastic, pay-per-use file storage</td><td>EFS with Elastic throughput</td></tr>
+            <tr><td>Content management system, web serving, shared code</td><td>EFS</td></tr>
+            <tr><td>EFS disaster recovery, cross-Region</td><td>EFS replication</td></tr>
+            <tr><td>Automatic file tiering in EFS</td><td>Lifecycle policies (EFS Intelligent-Tiering)</td></tr>
+            <tr><td>Enforce encryption in transit for EFS</td><td>File system policy + mount with -o tls</td></tr>
+            <tr><td>Multiple apps isolated in one EFS file system</td><td>EFS Access Points</td></tr>
+            <tr><td>Boot volume for EC2</td><td>EBS (not EFS)</td></tr>
+            <tr><td>Single instance, high IOPS database storage</td><td>EBS io2 (not EFS)</td></tr>
+            <tr><td>Object storage, data lake, backups</td><td>S3 (not EFS)</td></tr>
+            <tr><td>Highest-throughput parallel file system</td><td>FSx for Lustre</td></tr>
+            <tr><td>Automatically grow/shrink storage without provisioning</td><td>EFS</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Final mental model</h2>
+        <p>Every EFS/FSx exam question can be broken down with this sequence:</p>
+        <ol>
+          <li><strong>Does it need to be shared across multiple instances?</strong></li>
+          <li><strong>What OS?</strong></li>
+          <li><strong>What protocol?</strong></li>
+          <li><strong>What performance is needed?</strong></li>
+          <li><strong>What availability is needed?</strong></li>
+          <li><strong>What is the access pattern?</strong></li>
+          <li><strong>What is the cost priority?</strong></li>
+        </ol>
+        <p>If you can answer these seven questions for any scenario, you can answer any EFS/FSx question on the SAA-C03.</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
