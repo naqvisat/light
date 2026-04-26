@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS DynamoDB: The Complete Guide for SAA-C03</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font: 700 20px/1.35 "Helvetica Neue", Arial, sans-serif;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+  em { color: var(--text-dim); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  pre {
+    margin: 18px 0 22px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    background: #f3ede3;
+    border: 1px solid #e2d8c7;
+    border-radius: 14px;
+    color: #2f2a22;
+    font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 17px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    li {
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 18px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+
+    pre {
+      font-size: 12px;
+      padding: 14px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html" aria-current="page">DynamoDB</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS DynamoDB: The Complete Guide for SAA-C03</h1>
+        <p class="deck"><em>Everything you need to know about Amazon DynamoDB &mdash; primary keys, capacity modes, secondary indexes (GSI/LSI), consistency models, DynamoDB Streams, Global Tables, DAX, TTL, transactions, backups, security, hard limits, and every exam trap &mdash; in one place.</em></p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>What is DynamoDB?</h2>
+        <p>Amazon DynamoDB is a <strong>fully managed, serverless, NoSQL key-value and document database</strong> that delivers single-digit millisecond performance at any scale.</p>
+        <p><strong>Foundational properties:</strong></p>
+        <ul>
+          <li><strong>Fully managed</strong></li>
+          <li><strong>Serverless</strong></li>
+          <li><strong>NoSQL</strong></li>
+          <li><strong>Key-value and document</strong></li>
+          <li><strong>Performance</strong> in single-digit milliseconds</li>
+          <li><strong>Durability</strong> across 3 AZs within a Region</li>
+          <li><strong>Availability</strong> 99.99% SLA; 99.999% for Global Tables</li>
+          <li><strong>Scales to any size</strong></li>
+          <li>Regional service</li>
+          <li><strong>No resource-based policies</strong></li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Core concepts</h2>
+        <h3>Tables, items, and attributes</h3>
+        <table>
+          <thead>
+            <tr><th>Concept</th><th>Description</th><th>Analogy</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Table</strong></td><td>A collection of items</td><td>Like a relational table</td></tr>
+            <tr><td><strong>Item</strong></td><td>A single data record in a table</td><td>Like a row</td></tr>
+            <tr><td><strong>Attribute</strong></td><td>A named data element of an item</td><td>Like a column, but schema-flexible</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Schema flexibility:</strong> Every item must have the primary key attributes. All other attributes are optional and can differ between items.</p>
+
+        <h3>Supported data types</h3>
+        <table>
+          <thead>
+            <tr><th>Category</th><th>Types</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Scalar</strong></td><td>String, Number, Binary, Boolean, Null</td></tr>
+            <tr><td><strong>Document</strong></td><td>Map, List</td></tr>
+            <tr><td><strong>Set</strong></td><td>String Set, Number Set, Binary Set</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Primary keys</h2>
+        <p>The primary key uniquely identifies each item in a table. It is chosen at table creation and <strong>cannot be changed afterward</strong>.</p>
+        <h3>Two primary key types</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Composition</th><th>How DynamoDB uses it</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Partition key only</strong></td><td>Single attribute</td><td>Hash determines partition</td></tr>
+            <tr><td><strong>Partition key + Sort key</strong></td><td>Two attributes</td><td>Hash determines partition; sort key orders within it</td></tr>
+          </tbody>
+        </table>
+        <h3>Partition key design</h3>
+        <ul>
+          <li><strong>High cardinality</strong></li>
+          <li><strong>Even distribution</strong></li>
+          <li>Avoid hot keys like limited-status values or traffic-skewed dates</li>
+        </ul>
+        <p><strong>Hot partition = throttling.</strong></p>
+        <h3>Sort key</h3>
+        <p>Enables range queries, prefix queries, and one-to-many modeling within a partition.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Capacity modes</h2>
+        <h3>On-demand mode</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pricing</strong></td><td>Pay per request</td></tr>
+            <tr><td><strong>Provisioning</strong></td><td>None</td></tr>
+            <tr><td><strong>Throttling</strong></td><td>Handles spikes up to 2x previous peak, adapts within 30 minutes</td></tr>
+            <tr><td><strong>Best for</strong></td><td>Unpredictable or spiky traffic</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Higher per-request cost</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Provisioned mode (with optional Auto Scaling)</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Pricing</strong></td><td>Pay for provisioned RCU/WCU</td></tr>
+            <tr><td><strong>Provisioning</strong></td><td>You specify capacity or use Auto Scaling</td></tr>
+            <tr><td><strong>Throttling</strong></td><td>Occurs when you exceed provisioned capacity</td></tr>
+            <tr><td><strong>Best for</strong></td><td>Predictable workloads, cost optimization</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Lower per-request cost</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Capacity unit math - know this cold</h3>
+        <p><strong>Read Capacity Units (RCU):</strong></p>
+        <table>
+          <thead>
+            <tr><th>Read type</th><th>Item size</th><th>RCU cost</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Strongly consistent</strong></td><td>Up to 4 KB</td><td><strong>1 RCU</strong></td></tr>
+            <tr><td><strong>Eventually consistent</strong></td><td>Up to 4 KB</td><td><strong>0.5 RCU</strong></td></tr>
+            <tr><td><strong>Transactional</strong></td><td>Up to 4 KB</td><td><strong>2 RCU</strong></td></tr>
+          </tbody>
+        </table>
+        <p><strong>Write Capacity Units (WCU):</strong></p>
+        <table>
+          <thead>
+            <tr><th>Write type</th><th>Item size</th><th>WCU cost</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Standard</strong></td><td>Up to 1 KB</td><td><strong>1 WCU</strong></td></tr>
+            <tr><td><strong>Transactional</strong></td><td>Up to 1 KB</td><td><strong>2 WCU</strong></td></tr>
+          </tbody>
+        </table>
+        <p>Items larger than the unit size are rounded up.</p>
+
+        <h3>Switching modes</h3>
+        <ul>
+          <li>Provisioned → On-demand: anytime</li>
+          <li>On-demand → Provisioned: anytime</li>
+          <li>Provisioned → On-demand is limited to <strong>4 times in 24 hours</strong></li>
+        </ul>
+
+        <h3>DynamoDB Standard-IA table class</h3>
+        <p>Lower storage cost, higher per-request cost. Best when storage dominates and access is infrequent.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Secondary indexes - GSI and LSI</h2>
+        <h3>Global Secondary Index (GSI)</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Partition key</strong></td><td>Any attribute</td></tr>
+            <tr><td><strong>Sort key</strong></td><td>Optional; any attribute</td></tr>
+            <tr><td><strong>Scope</strong></td><td>Global</td></tr>
+            <tr><td><strong>Consistency</strong></td><td><strong>Eventually consistent only</strong></td></tr>
+            <tr><td><strong>Capacity</strong></td><td>Own provisioned capacity</td></tr>
+            <tr><td><strong>When to create</strong></td><td>Anytime</td></tr>
+            <tr><td><strong>Limit</strong></td><td>Up to <strong>20 GSIs</strong></td></tr>
+          </tbody>
+        </table>
+
+        <h3>Local Secondary Index (LSI)</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Partition key</strong></td><td>Same as base table</td></tr>
+            <tr><td><strong>Sort key</strong></td><td>Different attribute</td></tr>
+            <tr><td><strong>Scope</strong></td><td>Local</td></tr>
+            <tr><td><strong>Consistency</strong></td><td>Strong or eventual</td></tr>
+            <tr><td><strong>Capacity</strong></td><td>Shares base table capacity</td></tr>
+            <tr><td><strong>When to create</strong></td><td><strong>At table creation only</strong></td></tr>
+            <tr><td><strong>Limit</strong></td><td>Up to <strong>5 LSIs</strong></td></tr>
+            <tr><td><strong>Size limit</strong></td><td><strong>10 GB</strong> per partition key</td></tr>
+          </tbody>
+        </table>
+
+        <h3>GSI vs. LSI decision table</h3>
+        <table>
+          <thead>
+            <tr><th>When to use</th><th>Index type</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Different query attribute</td><td><strong>GSI</strong></td></tr>
+            <tr><td>Need strong consistency on index</td><td><strong>LSI</strong></td></tr>
+            <tr><td>Add after table exists</td><td><strong>GSI</strong></td></tr>
+            <tr><td>Partition may exceed 10 GB</td><td><strong>GSI</strong></td></tr>
+            <tr><td>Separate capacity management</td><td><strong>GSI</strong></td></tr>
+            <tr><td>Query includes table partition key</td><td><strong>LSI</strong> or GSI</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Projections</h3>
+        <table>
+          <thead>
+            <tr><th>Projection type</th><th>What is copied</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>KEYS_ONLY</code></td><td>Only key attributes</td></tr>
+            <tr><td><code>INCLUDE</code></td><td>Keys + selected attributes</td></tr>
+            <tr><td><code>ALL</code></td><td>All attributes</td></tr>
+          </tbody>
+        </table>
+
+        <h3>GSI throttling</h3>
+        <p>If a GSI runs out of write capacity, the <strong>base table is also throttled</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Read consistency models</h2>
+        <table>
+          <thead>
+            <tr><th>Model</th><th>Behavior</th><th>Cost</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Eventually consistent</strong></td><td>May return slightly stale data</td><td>0.5 RCU per 4 KB</td><td>Default, most workloads</td></tr>
+            <tr><td><strong>Strongly consistent</strong></td><td>Returns the latest data</td><td>1 RCU per 4 KB</td><td>When latest data is required</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>GSIs support <strong>only eventual consistency</strong>.</li>
+          <li>LSIs support both eventual and strong consistency.</li>
+          <li>Global Tables are eventually consistent across Regions by default.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DynamoDB Streams</h2>
+        <p>DynamoDB Streams captures a <strong>time-ordered sequence of item-level modifications</strong> over the last <strong>24 hours</strong>.</p>
+        <h3>Stream record types</h3>
+        <table>
+          <thead>
+            <tr><th>View type</th><th>What the stream record contains</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>KEYS_ONLY</code></td><td>Only primary key attributes</td></tr>
+            <tr><td><code>NEW_IMAGE</code></td><td>Entire item after modification</td></tr>
+            <tr><td><code>OLD_IMAGE</code></td><td>Entire item before modification</td></tr>
+            <tr><td><code>NEW_AND_OLD_IMAGES</code></td><td>Both before and after images</td></tr>
+          </tbody>
+        </table>
+        <h3>Use cases</h3>
+        <ul>
+          <li>Trigger Lambda functions</li>
+          <li>Cross-Region replication</li>
+          <li>Analytics pipelines</li>
+          <li>Audit trail</li>
+          <li>Materialized views</li>
+        </ul>
+        <h3>DynamoDB Streams vs. Kinesis Data Streams for DynamoDB</h3>
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>DynamoDB Streams</th><th>Kinesis Data Streams</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Retention</td><td><strong>24 hours</strong></td><td>Up to <strong>365 days</strong></td></tr>
+            <tr><td>Consumers</td><td>Up to 2 per shard</td><td>Multiple consumers</td></tr>
+            <tr><td>Ordering</td><td>Ordered per item</td><td>Not guaranteed globally</td></tr>
+            <tr><td>Deduplication</td><td>Built-in</td><td>App must handle</td></tr>
+            <tr><td>Throughput</td><td>Limited</td><td>Higher</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DynamoDB Accelerator (DAX)</h2>
+        <p>DAX is an <strong>in-memory cache</strong> specifically designed for DynamoDB.</p>
+        <ul>
+          <li><strong>Cache hit:</strong> microsecond response time</li>
+          <li><strong>Cache miss:</strong> reads from DynamoDB and caches the result</li>
+          <li>Write-through caching</li>
+        </ul>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Latency</strong></td><td>Microseconds for cached reads</td></tr>
+            <tr><td><strong>Consistency</strong></td><td><strong>Eventually consistent only</strong></td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Cluster in your VPC</td></tr>
+            <tr><td><strong>Encryption</strong></td><td>At rest and in transit supported</td></tr>
+            <tr><td><strong>TTL</strong></td><td>Configurable cache TTL</td></tr>
+            <tr><td><strong>Multi-AZ</strong></td><td>Supported</td></tr>
+          </tbody>
+        </table>
+        <h3>When to use DAX vs. ElastiCache</h3>
+        <table>
+          <thead>
+            <tr><th>Scenario</th><th>Choose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Read-heavy DynamoDB workload</td><td><strong>DAX</strong></td></tr>
+            <tr><td>Cache results from multiple data sources</td><td><strong>ElastiCache</strong></td></tr>
+            <tr><td>Need strongly consistent cached reads</td><td><strong>Neither</strong></td></tr>
+            <tr><td>Session store / leaderboards</td><td><strong>ElastiCache</strong></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Global Tables</h2>
+        <p>Global Tables provide <strong>multi-Region, multi-active replication</strong> of DynamoDB tables.</p>
+        <ul>
+          <li>All replicas are <strong>read-write</strong></li>
+          <li>Writes replicate automatically to all other replicas</li>
+          <li>Conflicts use <strong>last-writer-wins</strong></li>
+        </ul>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>SLA</strong></td><td><strong>99.999%</strong></td></tr>
+            <tr><td><strong>Replicas</strong></td><td>One per Region; multiple Regions supported</td></tr>
+            <tr><td><strong>Consistency</strong></td><td>MREC or MRSC</td></tr>
+            <tr><td><strong>Streams</strong></td><td>Automatically enabled</td></tr>
+            <tr><td><strong>Transactions</strong></td><td>ACID only within a single Region</td></tr>
+            <tr><td><strong>DAX</strong></td><td>Works but caches may be stale</td></tr>
+            <tr><td><strong>Pricing</strong></td><td>Uses Replicated WCUs</td></tr>
+          </tbody>
+        </table>
+        <h3>MREC vs. MRSC</h3>
+        <table>
+          <thead>
+            <tr><th>Mode</th><th>Consistency</th><th>Latency</th><th>Region support</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>MREC</strong></td><td>Eventually consistent across Regions</td><td>Lower write latency</td><td>All Regions</td></tr>
+            <tr><td><strong>MRSC</strong></td><td>Strongly consistent across Regions</td><td>Higher write latency</td><td>Limited Region sets</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Time to Live (TTL)</h2>
+        <p>TTL automatically deletes expired items from a table <strong>without consuming write capacity</strong>.</p>
+        <ol>
+          <li>Choose a TTL attribute storing a Unix epoch timestamp (Number type).</li>
+          <li>Enable TTL on the table.</li>
+          <li>DynamoDB deletes expired items within a few days.</li>
+        </ol>
+        <ul>
+          <li>TTL deletes do not consume WCU in the source Region.</li>
+          <li>Deleted items appear in DynamoDB Streams.</li>
+          <li>In Global Tables, TTL deletes replicate and consume replicated WCU.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Transactions</h2>
+        <p>DynamoDB supports <strong>ACID transactions</strong> across multiple items and tables within a single Region.</p>
+        <table>
+          <thead>
+            <tr><th>Operation</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TransactWriteItems</code></td><td>Atomic write of up to <strong>100 items</strong></td></tr>
+            <tr><td><code>TransactGetItems</code></td><td>Atomic read of up to <strong>100 items</strong></td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>Maximum <strong>100 items</strong> per transaction</li>
+          <li>Maximum <strong>4 MB</strong> per transaction</li>
+          <li>Cannot target the same item twice in one transaction</li>
+          <li>Transactions consume <strong>2x RCU/WCU</strong></li>
+          <li>Not supported across Regions in Global Tables</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Backups</h2>
+        <h3>On-demand backup</h3>
+        <ul>
+          <li>Full backup of a table at any point in time</li>
+          <li>No performance impact</li>
+          <li>Retained until you delete it</li>
+          <li>Restores to a new table</li>
+        </ul>
+        <h3>Point-in-Time Recovery (PITR)</h3>
+        <ul>
+          <li>Continuous backups with <strong>35-day recovery window</strong></li>
+          <li>Restore to any second within the last 35 days</li>
+          <li>Must be explicitly enabled</li>
+          <li>Restores to a <strong>new table</strong></li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Security</h2>
+        <h3>Encryption at rest</h3>
+        <ul>
+          <li>All DynamoDB tables are <strong>encrypted at rest</strong> and this cannot be disabled.</li>
+          <li>Key options: AWS owned, AWS managed, or customer managed KMS key.</li>
+          <li>You can change key type up to <strong>4 times per 24 hours</strong>.</li>
+        </ul>
+        <h3>Encryption in transit</h3>
+        <p>All DynamoDB API calls use <strong>HTTPS/TLS</strong> by default.</p>
+        <h3>Access control</h3>
+        <ul>
+          <li><strong>IAM policies</strong> control table access.</li>
+          <li><strong>dynamodb:LeadingKeys</strong> restricts access by partition key values.</li>
+          <li><strong>dynamodb:Attributes</strong> restricts which attributes can be accessed.</li>
+          <li><strong>VPC endpoints</strong> provide private access from VPCs.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DynamoDB and VPC access</h2>
+        <p>DynamoDB is a <strong>public service</strong>. For private access from a VPC use:</p>
+        <ul>
+          <li><strong>Gateway VPC endpoint</strong> (recommended, free)</li>
+          <li><strong>Interface VPC endpoint</strong> (costs money)</li>
+        </ul>
+        <p>Lambda in a VPC should typically use a gateway VPC endpoint to avoid a NAT Gateway.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Conditional writes and optimistic locking</h2>
+        <h3>Conditional writes</h3>
+        <p>Add conditions so a write only succeeds if an attribute has an expected value.</p>
+        <h3>Optimistic locking</h3>
+        <p>Use a version number attribute and conditionally update only if the expected version matches.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Scan vs. Query</h2>
+        <table>
+          <thead>
+            <tr><th>Operation</th><th>Behavior</th><th>Efficiency</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Query</strong></td><td>Finds items by partition key (and optionally sort key conditions)</td><td><strong>Efficient</strong></td></tr>
+            <tr><td><strong>Scan</strong></td><td>Reads every item in the table or index</td><td><strong>Inefficient</strong></td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>Prefer <strong>Query</strong> over Scan.</li>
+          <li>Parallel Scan can speed up a scan but consumes more RCU.</li>
+          <li>Filter expressions do <strong>not</strong> reduce RCU consumption.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Patterns and anti-patterns</h2>
+        <h3>When to use DynamoDB</h3>
+        <ul>
+          <li>Known access patterns with key-based lookups</li>
+          <li>High-scale, low-latency applications</li>
+          <li>Session stores, carts, user profiles</li>
+          <li>Time-series data</li>
+          <li>Event-driven architectures</li>
+        </ul>
+        <h3>When NOT to use DynamoDB</h3>
+        <ul>
+          <li>Complex joins and ad-hoc queries</li>
+          <li>Full-text search</li>
+          <li>Large cross-table transactions</li>
+          <li>OLAP analytics workloads</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DynamoDB quotas and hard limits</h2>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Limit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Maximum item size</td><td><strong>400 KB</strong></td></tr>
+            <tr><td>Maximum partition key length</td><td>2,048 bytes</td></tr>
+            <tr><td>Maximum sort key length</td><td>1,024 bytes</td></tr>
+            <tr><td>Maximum attribute name length</td><td>64 KB</td></tr>
+            <tr><td>GSIs per table</td><td><strong>20</strong> (adjustable to 100)</td></tr>
+            <tr><td>LSIs per table</td><td><strong>5</strong></td></tr>
+            <tr><td>Projected attributes per LSI</td><td>100</td></tr>
+            <tr><td>Item collection size for LSI</td><td><strong>10 GB</strong> per partition key</td></tr>
+            <tr><td>Maximum results per Query/Scan</td><td><strong>1 MB</strong></td></tr>
+            <tr><td>BatchGetItem</td><td><strong>100 items</strong> or <strong>16 MB</strong></td></tr>
+            <tr><td>BatchWriteItem</td><td><strong>25 items</strong> or <strong>16 MB</strong></td></tr>
+            <tr><td>TransactWriteItems</td><td><strong>100 items</strong> or <strong>4 MB</strong></td></tr>
+            <tr><td>TransactGetItems</td><td><strong>100 items</strong> or <strong>4 MB</strong></td></tr>
+            <tr><td>Tables per Region per account</td><td><strong>2,500</strong></td></tr>
+            <tr><td>Account-level provisioned throughput</td><td>80,000 RCU / 80,000 WCU</td></tr>
+            <tr><td>Table-level provisioned throughput</td><td>40,000 RCU / 40,000 WCU</td></tr>
+            <tr><td>On-demand table throughput</td><td>40,000 RRU / 40,000 WRU</td></tr>
+            <tr><td>DynamoDB Streams retention</td><td><strong>24 hours</strong></td></tr>
+            <tr><td>PITR retention</td><td><strong>35 days</strong></td></tr>
+            <tr><td>DAX cluster max nodes</td><td>11</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Critical limit:</strong> maximum item size is <strong>400 KB</strong>. Larger objects should live in S3 with a pointer in DynamoDB.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Cost optimization</h2>
+        <h3>Capacity mode selection</h3>
+        <table>
+          <thead>
+            <tr><th>Workload pattern</th><th>Recommended mode</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Predictable, steady traffic</td><td><strong>Provisioned</strong> with Auto Scaling</td></tr>
+            <tr><td>Spiky or unpredictable traffic</td><td><strong>On-demand</strong></td></tr>
+            <tr><td>New application</td><td><strong>On-demand</strong></td></tr>
+          </tbody>
+        </table>
+        <h3>Reserved Capacity</h3>
+        <p>Provisioned mode supports Reserved Capacity for up to 77% savings.</p>
+        <h3>Storage class</h3>
+        <p>Use <strong>Standard-IA</strong> when storage dominates and access is infrequent.</p>
+        <h3>TTL</h3>
+        <p>Use TTL to delete expired data automatically.</p>
+        <h3>Smaller items</h3>
+        <p>Design items to be as small as possible; move large attributes to S3.</p>
+        <h3>Eventually consistent reads</h3>
+        <p>Use eventual consistency unless you truly need strong consistency.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Common exam traps and edge cases</h2>
+        <ol>
+          <li><strong>Maximum item size is 400 KB.</strong></li>
+          <li><strong>LSI must be created at table creation.</strong></li>
+          <li><strong>LSI has a 10 GB item collection limit.</strong></li>
+          <li><strong>GSI only supports eventually consistent reads.</strong></li>
+          <li><strong>GSI throttling throttles the base table.</strong></li>
+          <li><strong>Filter expressions do NOT reduce RCU.</strong></li>
+          <li><strong>Transactions cost 2x.</strong></li>
+          <li><strong>DynamoDB Streams retention is only 24 hours.</strong></li>
+          <li><strong>Global Tables transactions are Region-local only.</strong></li>
+          <li><strong>PITR restores to a NEW table.</strong></li>
+          <li><strong>DAX only supports eventually consistent reads.</strong></li>
+          <li><strong>On-demand mode adapts to 2x previous peak.</strong></li>
+          <li><strong>No resource-based policies.</strong></li>
+        </ol>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick reference: exam keyword -&gt; answer mapping</h2>
+        <table>
+          <thead>
+            <tr><th>Exam keyword/phrase</th><th>Think...</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Single-digit millisecond latency, key-value lookups</td><td>DynamoDB</td></tr>
+            <tr><td>Microsecond latency for DynamoDB reads</td><td>DAX</td></tr>
+            <tr><td>Unpredictable DynamoDB traffic</td><td>On-demand capacity mode</td></tr>
+            <tr><td>Reduce DynamoDB costs for steady workload</td><td>Provisioned + Auto Scaling + Reserved Capacity</td></tr>
+            <tr><td>Multi-Region active-active database</td><td>DynamoDB Global Tables</td></tr>
+            <tr><td>React to DynamoDB changes in real-time</td><td>DynamoDB Streams + Lambda</td></tr>
+            <tr><td>Automatically delete expired session data</td><td>TTL</td></tr>
+            <tr><td>Recover DynamoDB to 3 hours ago</td><td>PITR</td></tr>
+            <tr><td>Atomically update multiple items</td><td>DynamoDB Transactions</td></tr>
+            <tr><td>Each user can only access their own items</td><td><code>dynamodb:LeadingKeys</code></td></tr>
+            <tr><td>Store objects larger than 400 KB</td><td>S3 + DynamoDB pointer</td></tr>
+            <tr><td>Query by non-primary-key attribute</td><td>GSI</td></tr>
+            <tr><td>Need strongly consistent reads on secondary index</td><td>LSI</td></tr>
+            <tr><td>Private access to DynamoDB from VPC</td><td>Gateway VPC endpoint</td></tr>
+            <tr><td>Lambda in VPC times out calling DynamoDB</td><td>Add gateway VPC endpoint</td></tr>
+            <tr><td>Large table, mostly infrequently accessed</td><td>Standard-IA table class</td></tr>
+            <tr><td>Cross-account DynamoDB access</td><td>IAM role assumption</td></tr>
+            <tr><td>Longer CDC retention than 24 hours</td><td>Kinesis Data Streams for DynamoDB</td></tr>
+            <tr><td>Cache results from DynamoDB + RDS</td><td>ElastiCache</td></tr>
+            <tr><td>Session store for web application</td><td>DynamoDB or ElastiCache</td></tr>
+            <tr><td>Hot partition causing throttling</td><td>Redesign partition key</td></tr>
+            <tr><td>Prevent overwriting item modified by another user</td><td>Optimistic locking</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Final mental model</h2>
+        <p>Every DynamoDB exam question can be broken down with this sequence:</p>
+        <ol>
+          <li><strong>What is the access pattern?</strong></li>
+          <li><strong>What is the primary key?</strong></li>
+          <li><strong>What capacity mode?</strong></li>
+          <li><strong>Do you need secondary indexes?</strong></li>
+          <li><strong>What consistency?</strong></li>
+          <li><strong>Do you need caching?</strong></li>
+          <li><strong>Do you need multi-Region?</strong></li>
+          <li><strong>What are the cost drivers?</strong></li>
+        </ol>
+        <p>If you can answer these eight questions for any scenario, you can answer any DynamoDB question on the SAA-C03.</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
