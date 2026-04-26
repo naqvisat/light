@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS RDS &amp; Aurora: The Complete Guide for SAA-C03</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font: 700 20px/1.35 "Helvetica Neue", Arial, sans-serif;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+  em { color: var(--text-dim); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  pre {
+    margin: 18px 0 22px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    background: #f3ede3;
+    border: 1px solid #e2d8c7;
+    border-radius: 14px;
+    color: #2f2a22;
+    font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 17px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    li {
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 18px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+
+    pre {
+      font-size: 12px;
+      padding: 14px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html" aria-current="page">Aurora and RDS</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS RDS &amp; Aurora: The Complete Guide for SAA-C03</h1>
+        <p class="deck"><em>Everything you need to know about Amazon Relational Database Service and Amazon Aurora &mdash; engines, Multi-AZ, read replicas, Aurora replicas, storage, backups, encryption, RDS Proxy, Aurora Serverless, Aurora Global Database, security, availability, scalability, cost, hard limits, and every exam trap &mdash; in one place.</em></p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>What is RDS?</h2>
+        <p>Amazon RDS (Relational Database Service) is a <strong>fully managed relational database</strong> service. AWS handles provisioning, patching, backups, recovery, and failover so you can focus on the application and the database design.</p>
+        <p><strong>What "managed" means:</strong></p>
+        <ul>
+          <li>AWS manages OS patching, database engine patching, automated backups, Multi-AZ replication, storage scaling, and monitoring.</li>
+          <li>You manage schema design, query optimization, index tuning, and application-level security.</li>
+          <li>You <strong>cannot SSH</strong> into RDS instances. If you need full OS access, run your database on EC2 instead.</li>
+        </ul>
+
+        <h3>Supported engines</h3>
+        <table>
+          <thead>
+            <tr><th>Engine</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>MySQL</strong></td><td>Most popular open-source engine</td></tr>
+            <tr><td><strong>PostgreSQL</strong></td><td>Advanced open-source engine with strong SQL compliance</td></tr>
+            <tr><td><strong>MariaDB</strong></td><td>MySQL fork, community-driven</td></tr>
+            <tr><td><strong>Oracle</strong></td><td>Enterprise engine, BYOL or license-included</td></tr>
+            <tr><td><strong>SQL Server</strong></td><td>Microsoft engine, BYOL or license-included</td></tr>
+            <tr><td><strong>Amazon Aurora</strong></td><td>AWS-built, MySQL- and PostgreSQL-compatible</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>What is Aurora?</h2>
+        <p>Amazon Aurora is a <strong>MySQL- and PostgreSQL-compatible</strong> relational database built by AWS for cloud-native performance and availability.</p>
+        <p><strong>Why Aurora exists:</strong> Aurora delivers up to <strong>5x the throughput of standard MySQL</strong> and <strong>3x the throughput of standard PostgreSQL</strong> on RDS, often at a better performance-per-dollar point for larger workloads.</p>
+
+        <h3>Aurora architecture - what makes it different</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Standard RDS</th><th>Aurora</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Storage</strong></td><td>EBS volumes attached to the instance</td><td><strong>Shared, distributed storage layer</strong> with 6 copies across 3 AZs</td></tr>
+            <tr><td><strong>Storage scaling</strong></td><td>Manual sizing or Storage Auto Scaling</td><td><strong>Automatic</strong> growth in 10 GiB increments up to 128 TiB</td></tr>
+            <tr><td><strong>Replication</strong></td><td>Asynchronous read replicas</td><td><strong>Shared storage</strong>; replica lag typically under 10 ms</td></tr>
+            <tr><td><strong>Failover</strong></td><td>Usually 1-2 minutes</td><td><strong>Typically under 30 seconds</strong></td></tr>
+            <tr><td><strong>Read replicas</strong></td><td>Up to 5</td><td>Up to <strong>15 Aurora Replicas</strong></td></tr>
+          </tbody>
+        </table>
+
+        <h3>Aurora storage - 6 copies across 3 AZs</h3>
+        <ul>
+          <li>Writes require <strong>4 out of 6</strong> copies to acknowledge.</li>
+          <li>Reads require <strong>3 out of 6</strong> copies.</li>
+          <li>Aurora can tolerate the loss of <strong>2 copies for writes</strong> and <strong>3 copies for reads</strong>.</li>
+          <li>Storage is self-healing and continuously backed up to S3.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Multi-AZ deployments - high availability</h2>
+        <p>Multi-AZ is about <strong>availability and failover</strong>, not read scaling.</p>
+
+        <h3>RDS Multi-AZ</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>AWS maintains a <strong>synchronous standby replica</strong> in another AZ</td></tr>
+            <tr><td><strong>Standby</strong></td><td>Classic standby is <strong>not readable</strong></td></tr>
+            <tr><td><strong>Failover</strong></td><td>Automatic; DNS endpoint flips to standby in about <strong>1-2 minutes</strong></td></tr>
+            <tr><td><strong>Trigger</strong></td><td>AZ outage, instance failure, storage failure, patching, or manual failover</td></tr>
+            <tr><td><strong>Endpoint</strong></td><td>Single DNS endpoint that stays the same</td></tr>
+            <tr><td><strong>Cost</strong></td><td>You pay for both primary and standby</td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>RDS Multi-AZ DB Cluster</strong> is the newer model for MySQL and PostgreSQL: one writer plus two readable standbys across 3 AZs, with reader and writer endpoints and failover often under 35 seconds.</p>
+
+        <h3>Aurora Multi-AZ</h3>
+        <p>Aurora storage is already Multi-AZ. For compute-level HA, you place one or more <strong>Aurora Replicas</strong> in other AZs. If the writer fails, Aurora promotes a replica automatically, typically in under 30 seconds.</p>
+        <p><strong>Exam trap:</strong> "Multi-AZ standby cannot be used for reads" applies to classic RDS Multi-AZ only. Aurora Replicas and the newer RDS Multi-AZ DB Cluster standbys <strong>can</strong> serve reads.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Read replicas - read scaling</h2>
+        <p>Read replicas are about <strong>performance</strong> and <strong>read scaling</strong>, not automatic failover.</p>
+
+        <h3>RDS read replicas</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Replication</strong></td><td><strong>Asynchronous</strong>, so lag exists</td></tr>
+            <tr><td><strong>Read traffic</strong></td><td>Yes; application must route reads to the replica endpoint</td></tr>
+            <tr><td><strong>Write traffic</strong></td><td>No; read-only</td></tr>
+            <tr><td><strong>Max replicas</strong></td><td>Up to <strong>5</strong> per source DB instance</td></tr>
+            <tr><td><strong>Cross-Region</strong></td><td>Yes</td></tr>
+            <tr><td><strong>Promotion</strong></td><td>Can be manually promoted to a standalone DB</td></tr>
+            <tr><td><strong>Endpoint</strong></td><td>Each replica has its own DNS endpoint</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Aurora read replicas</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Replication</strong></td><td>Shared storage, not data copying</td></tr>
+            <tr><td><strong>Lag</strong></td><td>Typically <strong>under 10 ms</strong></td></tr>
+            <tr><td><strong>Max replicas</strong></td><td>Up to <strong>15</strong></td></tr>
+            <tr><td><strong>Auto Scaling</strong></td><td>Supported for replicas</td></tr>
+            <tr><td><strong>Failover</strong></td><td>Replicas are valid automatic failover targets</td></tr>
+            <tr><td><strong>Endpoint</strong></td><td>Cluster <strong>reader endpoint</strong> load-balances reads across replicas</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Aurora endpoints</h3>
+        <table>
+          <thead>
+            <tr><th>Endpoint type</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cluster endpoint</strong></td><td>Writer endpoint for writes</td></tr>
+            <tr><td><strong>Reader endpoint</strong></td><td>Load-balances reads across replicas</td></tr>
+            <tr><td><strong>Instance endpoint</strong></td><td>Targets one specific instance</td></tr>
+            <tr><td><strong>Custom endpoint</strong></td><td>Routes to a custom subset of instances</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Multi-AZ vs. read replicas</h3>
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Multi-AZ</th><th>Read replica</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Purpose</strong></td><td>High availability / failover</td><td>Read scaling / performance</td></tr>
+            <tr><td><strong>Can serve reads?</strong></td><td>No in classic RDS; yes in Aurora and RDS Multi-AZ DB Cluster</td><td>Yes</td></tr>
+            <tr><td><strong>Replication</strong></td><td>Synchronous</td><td>Asynchronous</td></tr>
+            <tr><td><strong>Automatic failover?</strong></td><td>Yes</td><td>No</td></tr>
+            <tr><td><strong>Cross-Region?</strong></td><td>No</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Storage</h2>
+        <h3>RDS storage types</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>IOPS</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>gp3</strong></td><td>Up to 16,000</td><td>Most workloads; default choice</td></tr>
+            <tr><td><strong>gp2</strong></td><td>Up to 16,000 with burst model</td><td>Legacy general purpose SSD</td></tr>
+            <tr><td><strong>io1/io2</strong></td><td>Up to 256,000</td><td>I/O-intensive databases</td></tr>
+            <tr><td><strong>Magnetic</strong></td><td>Low</td><td>Legacy only</td></tr>
+          </tbody>
+        </table>
+
+        <h3>RDS Storage Auto Scaling</h3>
+        <p>RDS automatically increases storage when free space falls below <strong>10%</strong>, that condition lasts at least <strong>5 minutes</strong>, and at least <strong>6 hours</strong> have passed since the last storage modification.</p>
+        <p><strong>Exam trigger:</strong> "RDS running out of storage" means <strong>enable Storage Auto Scaling</strong>.</p>
+
+        <h3>Aurora storage</h3>
+        <ul>
+          <li>No storage provisioning required.</li>
+          <li>Grows automatically in <strong>10 GiB</strong> increments.</li>
+          <li>Maximum size is <strong>128 TiB</strong>.</li>
+          <li>You pay only for storage used.</li>
+          <li>Continuously backed up to S3.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Backups</h2>
+        <h3>Automated backups</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Retention</strong></td><td>1-35 days, default 7 days</td></tr>
+            <tr><td><strong>Backup window</strong></td><td>Customer-defined or AWS-assigned</td></tr>
+            <tr><td><strong>Storage</strong></td><td>Backed up to S3 and managed by AWS</td></tr>
+            <tr><td><strong>Point-in-time restore</strong></td><td>Restore to any second in the retention period</td></tr>
+            <tr><td><strong>Restore target</strong></td><td>Always a <strong>new DB instance</strong> or cluster</td></tr>
+            <tr><td><strong>Performance impact</strong></td><td>Possible brief I/O pause on single-AZ RDS; not on Multi-AZ or Aurora</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Manual snapshots</h3>
+        <ul>
+          <li>Retained until you delete them.</li>
+          <li>Can be copied cross-Region.</li>
+          <li>Can be shared across accounts.</li>
+        </ul>
+
+        <h3>Aurora backtrack</h3>
+        <p>Aurora MySQL can <strong>rewind the existing cluster</strong> to a prior point in time without restoring a new cluster. The backtrack window can be as large as <strong>72 hours</strong>.</p>
+        <p><strong>Exam trigger:</strong> "Quickly undo a bad database change without restoring to a new instance" means <strong>Aurora Backtrack</strong>.</p>
+
+        <h3>Aurora clone</h3>
+        <p>Aurora Clone creates a fast copy-on-write clone for testing or analytics. It is nearly instant and initially shares storage with the source until pages change.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Encryption</h2>
+        <h3>At rest</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Method</strong></td><td>AES-256 using AWS KMS keys</td></tr>
+            <tr><td><strong>When to enable</strong></td><td><strong>Creation time only</strong></td></tr>
+            <tr><td><strong>Scope</strong></td><td>Encrypts storage, backups, snapshots, replicas, and logs</td></tr>
+            <tr><td><strong>Replica rule</strong></td><td>Encrypted source produces encrypted replicas; unencrypted cannot produce encrypted replicas</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Encrypting an existing unencrypted database</h3>
+        <ol>
+          <li>Take a snapshot of the unencrypted database.</li>
+          <li>Copy the snapshot and enable encryption during the copy.</li>
+          <li>Restore a new encrypted DB instance from that snapshot.</li>
+          <li>Switch the application to the new instance.</li>
+        </ol>
+
+        <h3>In transit</h3>
+        <p>Use <strong>SSL/TLS</strong> for client connections. You can enforce SSL with parameter groups such as <code>rds.force_ssl=1</code> for PostgreSQL or <code>require_secure_transport=ON</code> for MySQL.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>RDS Proxy</h2>
+        <p>RDS Proxy is a <strong>fully managed, highly available database proxy</strong> that sits between your application and your RDS or Aurora database.</p>
+        <h3>What it solves</h3>
+        <ul>
+          <li><strong>Connection pooling</strong> to protect the database from connection storms</li>
+          <li><strong>Faster failover</strong> by reconnecting to the new target automatically</li>
+          <li><strong>Lambda compatibility</strong> for spiky, short-lived connections</li>
+        </ul>
+
+        <h3>Key properties</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Supported engines</strong></td><td>MySQL, PostgreSQL, MariaDB, SQL Server on RDS and Aurora</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Runs inside your VPC</td></tr>
+            <tr><td><strong>IAM auth</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Secrets Manager</strong></td><td>Integrated for credential management</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Per-vCPU per hour</td></tr>
+          </tbody>
+        </table>
+
+        <p><strong>Exam trigger:</strong> "Lambda functions causing too many database connections" or "reduce failover time" means <strong>RDS Proxy</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Aurora Serverless</h2>
+        <h3>Aurora Serverless v2</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Scaling</strong></td><td>Continuous scaling in increments of <strong>0.5 ACU</strong></td></tr>
+            <tr><td><strong>Range</strong></td><td>0.5 to 256 ACU</td></tr>
+            <tr><td><strong>Speed</strong></td><td>Scales in milliseconds</td></tr>
+            <tr><td><strong>Mixed clusters</strong></td><td>Can run alongside provisioned instances in the same cluster</td></tr>
+            <tr><td><strong>Features</strong></td><td>Supports Multi-AZ, Global Database, replicas, and backtrack</td></tr>
+          </tbody>
+        </table>
+        <p><strong>1 ACU</strong> is roughly equivalent to 2 GiB of memory plus proportional CPU and networking.</p>
+
+        <h3>Aurora Serverless v1</h3>
+        <ul>
+          <li>Scales in larger steps and can pause during scaling.</li>
+          <li>Can scale to <strong>zero</strong>, which v2 cannot.</li>
+          <li>Has a more limited feature set than v2.</li>
+        </ul>
+
+        <p><strong>Exam trigger:</strong> unpredictable workload means <strong>Aurora Serverless v2</strong>. Truly intermittent development database that should cost nothing while idle points to <strong>Aurora Serverless v1</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Aurora Global Database</h2>
+        <p>Aurora Global Database provides <strong>cross-Region replication</strong> with one primary Region and up to <strong>5 secondary Regions</strong>.</p>
+        <ul>
+          <li>Secondary Regions are read-only until promoted.</li>
+          <li>Replication lag is typically <strong>under 1 second</strong>.</li>
+          <li>Each secondary Region can have up to <strong>16 Aurora Replicas</strong>.</li>
+          <li>Unplanned failover RPO is typically under 1 second, with RTO typically under 1 minute.</li>
+        </ul>
+        <p><strong>Exam trigger:</strong> "Cross-Region DR with under 1 second RPO" means <strong>Aurora Global Database</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>IAM database authentication</h2>
+        <p>RDS and Aurora support <strong>IAM-based authentication</strong> for MySQL and PostgreSQL.</p>
+        <ol>
+          <li>Enable IAM authentication on the DB instance.</li>
+          <li>Create a database user mapped to IAM.</li>
+          <li>The application obtains a token from IAM, valid for 15 minutes.</li>
+          <li>The token is used instead of a database password.</li>
+        </ol>
+        <p><strong>Exam trigger:</strong> "Authenticate to RDS without managing database passwords" means <strong>IAM database authentication</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Security</h2>
+        <h3>Network security</h3>
+        <ul>
+          <li>Best practice is to run RDS in <strong>private subnets</strong>.</li>
+          <li>Use <strong>security groups</strong> to control who can connect.</li>
+          <li>Use a <strong>DB subnet group</strong> spanning multiple AZs.</li>
+          <li>Public accessibility is possible but usually a bad idea.</li>
+        </ul>
+
+        <h3>Parameter groups and option groups</h3>
+        <p><strong>Parameter groups</strong> hold engine settings like <code>max_connections</code>. <strong>Option groups</strong> enable engine-specific features such as Oracle TDE or SQL Server native backup.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Monitoring</h2>
+        <h3>CloudWatch metrics</h3>
+        <p>Key metrics include <code>CPUUtilization</code>, <code>FreeableMemory</code>, <code>ReadIOPS</code>, <code>WriteIOPS</code>, <code>DatabaseConnections</code>, <code>FreeStorageSpace</code>, and <code>ReplicaLag</code>.</p>
+
+        <h3>Enhanced Monitoring</h3>
+        <p>Enhanced Monitoring provides OS-level metrics down to <strong>1-second granularity</strong>.</p>
+
+        <h3>Performance Insights</h3>
+        <p>Performance Insights highlights the top SQL queries, waits, and sources of load. If the question asks which tool identifies slow queries or top SQL, the answer is <strong>Performance Insights</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>RDS vs. Aurora - when to use which</h2>
+        <table>
+          <thead>
+            <tr><th>Factor</th><th>RDS</th><th>Aurora</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Cost</strong></td><td>Lower for smaller and simpler workloads</td><td>Higher base cost, better value at scale</td></tr>
+            <tr><td><strong>Performance</strong></td><td>Good</td><td>5x MySQL / 3x PostgreSQL</td></tr>
+            <tr><td><strong>Storage</strong></td><td>EBS-based and provisioned</td><td>Auto-scaling distributed storage up to 128 TiB</td></tr>
+            <tr><td><strong>Read replicas</strong></td><td>Up to 5</td><td>Up to 15, typically under 10 ms lag</td></tr>
+            <tr><td><strong>Failover time</strong></td><td>1-2 minutes</td><td>Under 30 seconds</td></tr>
+            <tr><td><strong>Serverless</strong></td><td>No</td><td>Yes</td></tr>
+            <tr><td><strong>Global database</strong></td><td>No native equivalent</td><td>Yes</td></tr>
+            <tr><td><strong>Backtrack / Clone</strong></td><td>No</td><td>Yes</td></tr>
+            <tr><td><strong>Engines</strong></td><td>MySQL, PostgreSQL, MariaDB, Oracle, SQL Server</td><td>MySQL-compatible and PostgreSQL-compatible only</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Rule of thumb:</strong> For MySQL or PostgreSQL with strong availability and performance requirements, Aurora is usually the better fit. For Oracle, SQL Server, or MariaDB, use standard RDS.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Database migration</h2>
+        <h3>AWS Database Migration Service (DMS)</h3>
+        <ul>
+          <li>Supports homogeneous and heterogeneous migrations.</li>
+          <li>Supports continuous replication for low-downtime cutovers.</li>
+          <li>Use <strong>AWS Schema Conversion Tool (SCT)</strong> first for heterogeneous migrations.</li>
+        </ul>
+        <p><strong>Exam trigger:</strong> "Migrate on-premises Oracle to Aurora PostgreSQL with minimal downtime" means <strong>SCT + DMS</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>ElastiCache - database caching</h2>
+        <p>ElastiCache is a fully managed in-memory caching service often used alongside RDS and Aurora.</p>
+        <h3>Redis vs. Memcached</h3>
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Redis</th><th>Memcached</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Persistence</strong></td><td>Yes</td><td>No</td></tr>
+            <tr><td><strong>Replication</strong></td><td>Yes</td><td>No</td></tr>
+            <tr><td><strong>Data types</strong></td><td>Rich structures</td><td>Simple string values</td></tr>
+            <tr><td><strong>Use cases</strong></td><td>Sessions, leaderboards, analytics</td><td>Simple cache pools</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Exam trigger:</strong> "Offload reads from RDS" often means <strong>ElastiCache</strong> or read replicas, depending on whether the question is about cache or relational replication.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Cost optimization</h2>
+        <h3>RDS pricing components</h3>
+        <ul>
+          <li>Instance hours</li>
+          <li>Provisioned storage</li>
+          <li>Manual snapshot storage</li>
+          <li>Backup storage beyond the free allocation</li>
+          <li>Cross-Region data transfer where applicable</li>
+        </ul>
+
+        <h3>Aurora pricing components</h3>
+        <ul>
+          <li>Instance hours</li>
+          <li>Storage consumed</li>
+          <li>I/O requests, unless using Aurora I/O-Optimized</li>
+          <li>Backtrack change records</li>
+        </ul>
+
+        <h3>Cost strategies</h3>
+        <table>
+          <thead>
+            <tr><th>Strategy</th><th>Savings / effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Reserved Instances</strong></td><td>Up to 69% savings for steady workloads</td></tr>
+            <tr><td><strong>Aurora Serverless v2</strong></td><td>Pay for the capacity actually used</td></tr>
+            <tr><td><strong>Aurora Serverless v1</strong></td><td>Can scale to zero for idle development workloads</td></tr>
+            <tr><td><strong>Stop dev/test instances</strong></td><td>Reduce compute cost while still paying for storage</td></tr>
+            <tr><td><strong>Aurora I/O-Optimized</strong></td><td>Better for heavy I/O workloads</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Exam trigger:</strong> "Reduce dev/test database cost during off-hours" means <strong>stop the DB instance</strong> or use <strong>Aurora Serverless</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quotas and hard limits</h2>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>RDS</th><th>Aurora</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Max storage</strong></td><td>64 TiB, except SQL Server at 16 TiB</td><td>128 TiB automatic</td></tr>
+            <tr><td><strong>Read replicas per source</strong></td><td>5</td><td>15</td></tr>
+            <tr><td><strong>Databases per Region</strong></td><td>40 adjustable</td><td>40 adjustable</td></tr>
+            <tr><td><strong>Manual snapshots per Region</strong></td><td>100 adjustable</td><td>100 adjustable</td></tr>
+            <tr><td><strong>Automated backup retention</strong></td><td>0-35 days</td><td>1-35 days</td></tr>
+            <tr><td><strong>Failover time</strong></td><td>1-2 minutes</td><td>Under 30 seconds</td></tr>
+            <tr><td><strong>Global secondary Regions</strong></td><td>N/A</td><td>Up to 5</td></tr>
+            <tr><td><strong>Serverless v2 range</strong></td><td>N/A</td><td>0.5-256 ACU</td></tr>
+            <tr><td><strong>Backtrack window</strong></td><td>N/A</td><td>Up to 72 hours</td></tr>
+            <tr><td><strong>Stopped max duration</strong></td><td>7 days</td><td>7 days</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Common exam traps and edge cases</h2>
+        <ol>
+          <li><strong>Classic RDS Multi-AZ standby is not for reads.</strong></li>
+          <li><strong>Read replicas do not provide automatic failover.</strong></li>
+          <li><strong>You cannot encrypt an existing unencrypted RDS instance in place.</strong></li>
+          <li><strong>Encrypted replicas require an encrypted source.</strong></li>
+          <li><strong>Aurora storage is automatic.</strong></li>
+          <li><strong>Aurora failover is faster than standard RDS failover.</strong></li>
+          <li><strong>RDS does not auto-scale compute.</strong></li>
+          <li><strong>Stopped instances auto-start after 7 days.</strong></li>
+          <li><strong>Aurora Global Database is not the same as standard cross-Region read replicas.</strong></li>
+          <li><strong>RDS Proxy is VPC-only.</strong></li>
+          <li><strong>Backtrack rewinds the existing Aurora cluster.</strong></li>
+          <li><strong>DMS keeps the source database operational during migration.</strong></li>
+          <li><strong>Aurora I/O-Optimized matters for I/O-heavy workloads.</strong></li>
+        </ol>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick reference: exam keyword to answer mapping</h2>
+        <table>
+          <thead>
+            <tr><th>Exam keyword / phrase</th><th>Think...</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>High availability for RDS</td><td>Multi-AZ deployment</td></tr>
+            <tr><td>Scale read traffic from RDS</td><td>Read replicas</td></tr>
+            <tr><td>Fastest failover for relational database</td><td>Aurora</td></tr>
+            <tr><td>Cross-Region disaster recovery, under 1 second RPO</td><td>Aurora Global Database</td></tr>
+            <tr><td>Database with unpredictable workload</td><td>Aurora Serverless v2</td></tr>
+            <tr><td>Database idle most of the time, minimize cost</td><td>Aurora Serverless v1</td></tr>
+            <tr><td>Lambda overwhelming database connections</td><td>RDS Proxy</td></tr>
+            <tr><td>Quickly undo a bad database change</td><td>Aurora Backtrack</td></tr>
+            <tr><td>Copy production database for testing cheaply</td><td>Aurora Clone</td></tr>
+            <tr><td>Encrypt an existing unencrypted RDS database</td><td>Snapshot, copy with encryption, restore</td></tr>
+            <tr><td>Authenticate to RDS without passwords</td><td>IAM database authentication</td></tr>
+            <tr><td>Migrate Oracle to Aurora PostgreSQL</td><td>SCT + DMS</td></tr>
+            <tr><td>Offload reads from RDS, cache hot data</td><td>ElastiCache</td></tr>
+            <tr><td>Identify slow SQL queries on RDS</td><td>Performance Insights</td></tr>
+            <tr><td>RDS running out of storage</td><td>Enable Storage Auto Scaling</td></tr>
+            <tr><td>MySQL or PostgreSQL, maximum performance</td><td>Aurora</td></tr>
+            <tr><td>Global reads with under 1 second replication</td><td>Aurora Global Database</td></tr>
+            <tr><td>Up to 15 read replicas with under 10 ms lag</td><td>Aurora Replicas</td></tr>
+            <tr><td>Manage database credentials securely</td><td>Secrets Manager with rotation</td></tr>
+            <tr><td>Read replica promoted to standalone</td><td>Manual promotion that permanently breaks replication</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Final mental model</h2>
+        <p>Every RDS/Aurora exam question can be broken down with this sequence:</p>
+        <ol>
+          <li><strong>Which engine?</strong> MySQL/PostgreSQL may point to Aurora; Oracle, SQL Server, and MariaDB stay on standard RDS.</li>
+          <li><strong>What availability is needed?</strong> Multi-AZ for same-Region HA; Aurora Global Database or cross-Region replicas for DR.</li>
+          <li><strong>What read scaling is needed?</strong> Use read replicas, Aurora Replicas, or caching.</li>
+          <li><strong>What is the workload pattern?</strong> Predictable means provisioned instances; unpredictable may mean Aurora Serverless v2.</li>
+          <li><strong>Is encryption required?</strong> Enable at creation; existing unencrypted databases require snapshot-copy-restore.</li>
+          <li><strong>What about connections?</strong> Spiky Lambda-style traffic points to RDS Proxy.</li>
+          <li><strong>What about cost?</strong> Reserved Instances, right-sizing, stopping dev/test, and Aurora I/O-Optimized all matter.</li>
+          <li><strong>Migration?</strong> DMS for data movement; SCT plus DMS for heterogeneous migrations.</li>
+        </ol>
+        <p>If you can answer these eight questions for any scenario, you can answer any RDS/Aurora question on the SAA-C03.</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
