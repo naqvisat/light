@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Route 53: The Complete Guide for SAA-C03</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font: 700 20px/1.35 "Helvetica Neue", Arial, sans-serif;
+    margin: 28px 0 10px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+  em { color: var(--text-dim); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  pre {
+    margin: 18px 0 22px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    background: #f3ede3;
+    border: 1px solid #e2d8c7;
+    border-radius: 14px;
+    color: #2f2a22;
+    font: 14px/1.6 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 17px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 18px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    li {
+      font-size: 15px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 18px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+
+    pre {
+      font-size: 12px;
+      padding: 14px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html" aria-current="page">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS Route 53: The Complete Guide for SAA-C03</h1>
+        <p class="deck"><em>Everything you need to know about Amazon Route 53 &mdash; DNS fundamentals, hosted zones, record types, Alias vs. CNAME, all routing policies, health checks, failover, domain registration, Route 53 Resolver, DNSSEC, availability, cost, hard limits, and every exam trap &mdash; in one place.</em></p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>What is Route 53?</h2>
+        <p>Amazon Route 53 is a <strong>highly available, scalable DNS web service</strong> that performs three functions:</p>
+        <ol>
+          <li><strong>Domain registration</strong></li>
+          <li><strong>DNS routing</strong></li>
+          <li><strong>Health checking</strong></li>
+        </ol>
+        <p><strong>Why "Route 53"?</strong> It is named after TCP/UDP <strong>port 53</strong>, the standard DNS port.</p>
+        <p><strong>Key properties:</strong></p>
+        <ul>
+          <li><strong>100% availability SLA</strong></li>
+          <li><strong>Global service</strong></li>
+          <li><strong>Anycast network</strong> for routing queries to the nearest edge location</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DNS fundamentals - what you need to know</h2>
+        <h3>How DNS works</h3>
+        <ol>
+          <li>User types <code>www.example.com</code> into a browser.</li>
+          <li>The browser asks a DNS resolver.</li>
+          <li>The resolver queries root servers, then TLD servers, then the authoritative name servers.</li>
+          <li>Route 53 returns the IP address.</li>
+          <li>The browser connects to that IP.</li>
+        </ol>
+
+        <h3>Key DNS terms</h3>
+        <table>
+          <thead>
+            <tr><th>Term</th><th>Definition</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Domain name</strong></td><td>Human-readable address like <code>example.com</code></td></tr>
+            <tr><td><strong>IP address</strong></td><td>Machine-readable address like <code>192.0.2.1</code></td></tr>
+            <tr><td><strong>TLD</strong></td><td>Top-level domain such as <code>.com</code> or <code>.org</code></td></tr>
+            <tr><td><strong>FQDN</strong></td><td>Fully qualified domain name such as <code>api.example.com.</code></td></tr>
+            <tr><td><strong>Zone apex</strong></td><td>The root of the domain, such as <code>example.com</code></td></tr>
+            <tr><td><strong>TTL</strong></td><td>How long a resolver caches a response</td></tr>
+            <tr><td><strong>NS</strong></td><td>Name server record</td></tr>
+            <tr><td><strong>Authoritative DNS</strong></td><td>The final source of truth for a domain</td></tr>
+          </tbody>
+        </table>
+
+        <h3>TTL - critical for the exam</h3>
+        <table>
+          <thead>
+            <tr><th>TTL value</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>High TTL</strong></td><td>Lower cost and fewer queries, but slower change propagation</td></tr>
+            <tr><td><strong>Low TTL</strong></td><td>Faster propagation, but more queries and higher cost</td></tr>
+          </tbody>
+        </table>
+        <p>Before a migration or failover, lower TTL well in advance. After the change is stable, raise it again.</p>
+        <p><strong>Alias records</strong> have TTL set automatically by Route 53.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Hosted zones</h2>
+        <h3>Public hosted zone</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Purpose</strong></td><td>Routes traffic on the public internet</td></tr>
+            <tr><td><strong>Scope</strong></td><td>Accessible from anywhere</td></tr>
+            <tr><td><strong>Example</strong></td><td><code>example.com</code> resolving to public endpoints</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Private hosted zone</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Purpose</strong></td><td>Private DNS for one or more VPCs</td></tr>
+            <tr><td><strong>Scope</strong></td><td>Only accessible from associated VPCs</td></tr>
+            <tr><td><strong>Requires</strong></td><td><code>enableDnsSupport</code> and <code>enableDnsHostnames</code> set to true</td></tr>
+            <tr><td><strong>Example</strong></td><td><code>internal.example.com</code> resolving to private IPs</td></tr>
+            <tr><td><strong>Cross-account</strong></td><td>Can associate with VPCs in other accounts</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Exam trigger:</strong> private internal names mean <strong>private hosted zone</strong>. Public internet names mean <strong>public hosted zone</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DNS record types</h2>
+        <table>
+          <thead>
+            <tr><th>Record type</th><th>Purpose</th><th>Example</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>A</strong></td><td>Maps to IPv4</td><td><code>example.com → 192.0.2.1</code></td></tr>
+            <tr><td><strong>AAAA</strong></td><td>Maps to IPv6</td><td><code>example.com → 2001:db8::1</code></td></tr>
+            <tr><td><strong>CNAME</strong></td><td>Maps to another domain name</td><td><code>www.example.com → example.com</code></td></tr>
+            <tr><td><strong>NS</strong></td><td>Names the authoritative name servers</td><td><code>example.com → ns-123.awsdns-45.com</code></td></tr>
+            <tr><td><strong>SOA</strong></td><td>Zone metadata</td><td>Created automatically</td></tr>
+            <tr><td><strong>MX</strong></td><td>Mail routing</td><td><code>10 mail.example.com</code></td></tr>
+            <tr><td><strong>TXT</strong></td><td>Verification and email policy text</td><td><code>v=spf1 ...</code></td></tr>
+            <tr><td><strong>SRV</strong></td><td>Service location data</td><td>Service discovery records</td></tr>
+            <tr><td><strong>CAA</strong></td><td>Certificate authority authorization</td><td>Restricts issuing CAs</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Alias records - Route 53 special</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Alias</th><th>CNAME</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Zone apex support</strong></td><td>Yes</td><td>No</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Free for AWS resource queries</td><td>Charged per query</td></tr>
+            <tr><td><strong>Target</strong></td><td>AWS resources only</td><td>Any domain name</td></tr>
+            <tr><td><strong>TTL</strong></td><td>Automatic</td><td>Configurable</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Alias targets</h3>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Alias supported?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ELB</td><td><strong>Yes</strong></td></tr>
+            <tr><td>CloudFront distribution</td><td><strong>Yes</strong></td></tr>
+            <tr><td>S3 website endpoint</td><td><strong>Yes</strong></td></tr>
+            <tr><td>API Gateway</td><td><strong>Yes</strong></td></tr>
+            <tr><td>Elastic Beanstalk</td><td><strong>Yes</strong></td></tr>
+            <tr><td>VPC interface endpoint</td><td><strong>Yes</strong></td></tr>
+            <tr><td>Another Route 53 record in same zone</td><td><strong>Yes</strong></td></tr>
+            <tr><td>Global Accelerator</td><td><strong>Yes</strong></td></tr>
+            <tr><td>EC2 instance public IP</td><td><strong>No</strong> - use A record</td></tr>
+            <tr><td>RDS endpoint</td><td><strong>No</strong> - use CNAME</td></tr>
+          </tbody>
+        </table>
+        <p><strong>The number one Route 53 exam rule:</strong> you cannot create a CNAME at the zone apex. If the apex needs to point at an AWS resource, use an <strong>Alias record</strong>.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Routing policies - the complete guide</h2>
+        <h3>1. Simple routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Returns one or more values; the client chooses</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Not supported</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Single resource with no special routing need</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2. Weighted routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Distributes traffic according to weights from 0 to 255</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Use case</strong></td><td>A/B tests, blue-green rollout, gradual migration</td></tr>
+          </tbody>
+        </table>
+        <p>Weight 70 to A and 30 to B sends roughly 70% to A and 30% to B. If all records have weight 0, Route 53 distributes traffic equally.</p>
+
+        <h3>3. Latency-based routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Routes to the Region with the lowest measured latency</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Global apps needing the best user experience</td></tr>
+          </tbody>
+        </table>
+
+        <h3>4. Failover routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Active-passive routing between primary and secondary</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Required on the primary</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Disaster recovery</td></tr>
+          </tbody>
+        </table>
+
+        <h3>5. Geolocation routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Routes based on the user's physical location</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Default record</strong></td><td>Required</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Localization and regional compliance</td></tr>
+          </tbody>
+        </table>
+
+        <h3>6. Geoproximity routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Routes by distance between users and resources, with adjustable bias</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Requires</strong></td><td>Route 53 Traffic Flow</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Shift traffic geographically without moving infrastructure</td></tr>
+          </tbody>
+        </table>
+
+        <h3>7. Multivalue answer routing</h3>
+        <table>
+          <thead>
+            <tr><th>Property</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it works</strong></td><td>Returns up to 8 healthy records randomly</td></tr>
+            <tr><td><strong>Health checks</strong></td><td>Supported</td></tr>
+            <tr><td><strong>Use case</strong></td><td>Client-side selection with health awareness</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Exam trap:</strong> multivalue answer is not a real load balancer.</p>
+
+        <h3>Routing policy decision table</h3>
+        <table>
+          <thead>
+            <tr><th>Scenario</th><th>Policy</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Single resource, no special need</td><td><strong>Simple</strong></td></tr>
+            <tr><td>A/B testing or gradual migration</td><td><strong>Weighted</strong></td></tr>
+            <tr><td>Route to lowest-latency Region</td><td><strong>Latency</strong></td></tr>
+            <tr><td>Active-passive disaster recovery</td><td><strong>Failover</strong></td></tr>
+            <tr><td>Localized content by geography</td><td><strong>Geolocation</strong></td></tr>
+            <tr><td>Shift traffic geographically with bias</td><td><strong>Geoproximity</strong></td></tr>
+            <tr><td>Return multiple healthy IPs</td><td><strong>Multivalue</strong></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Health checks</h2>
+        <h3>Three types of health checks</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>What it monitors</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Endpoint health check</strong></td><td>HTTP, HTTPS, or TCP check against an IP or domain</td></tr>
+            <tr><td><strong>Calculated health check</strong></td><td>Combines other health checks using threshold logic</td></tr>
+            <tr><td><strong>CloudWatch alarm health check</strong></td><td>Tracks a CloudWatch alarm state</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Endpoint health check details</h3>
+        <ul>
+          <li>Route 53 health checkers run from multiple Regions.</li>
+          <li>HTTP and HTTPS checks need a <strong>2xx or 3xx</strong> response.</li>
+          <li>You can optionally match a string in the first 5,120 bytes of the body.</li>
+          <li>Intervals are 30 seconds or 10 seconds.</li>
+          <li>Failure threshold defaults to 3 consecutive failures.</li>
+        </ul>
+
+        <h3>Health checks and private resources</h3>
+        <p>Public Route 53 health checkers cannot reach private resources in private subnets. For private targets, publish a metric, create a CloudWatch alarm, and make Route 53 watch the alarm.</p>
+
+        <h3>Health checks and routing policies</h3>
+        <table>
+          <thead>
+            <tr><th>Policy</th><th>Health check behavior</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Simple</td><td>Not supported</td></tr>
+            <tr><td>Weighted</td><td>Unhealthy records are excluded</td></tr>
+            <tr><td>Latency</td><td>Unhealthy records are excluded</td></tr>
+            <tr><td>Failover</td><td>Primary health check drives failover</td></tr>
+            <tr><td>Geolocation</td><td>Unhealthy records are excluded, fallback uses default record</td></tr>
+            <tr><td>Geoproximity</td><td>Unhealthy records are excluded</td></tr>
+            <tr><td>Multivalue</td><td>Unhealthy records are excluded from answers</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Domain registration</h2>
+        <ul>
+          <li>Route 53 can register new domains and transfer existing ones.</li>
+          <li>Registering a domain automatically creates a matching public hosted zone.</li>
+          <li>DNS hosting and domain registration are separate functions.</li>
+          <li>Domain locking helps prevent unauthorized transfer.</li>
+          <li>WHOIS privacy helps protect contact details.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Route 53 Resolver - hybrid DNS</h2>
+        <h3>Default VPC DNS</h3>
+        <p>Every VPC has a built-in resolver at the base address plus 2, such as <code>10.0.0.2</code>.</p>
+
+        <h3>Resolver endpoints</h3>
+        <table>
+          <thead>
+            <tr><th>Endpoint</th><th>Direction</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Inbound endpoint</strong></td><td>On-premises to AWS</td><td>Lets on-prem resolvers resolve AWS private hosted zones</td></tr>
+            <tr><td><strong>Outbound endpoint</strong></td><td>AWS to on-premises</td><td>Lets AWS resolve on-prem DNS names</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Resolver rules</h3>
+        <ul>
+          <li><strong>Conditional forwarding rules</strong> send selected domains to chosen resolvers.</li>
+          <li><strong>System rules</strong> override forwarding for specific domains.</li>
+          <li>Rules can be shared across accounts with <strong>AWS RAM</strong>.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Route 53 Traffic Flow</h2>
+        <p>Traffic Flow is a visual editor for building and versioning complex routing policies. It is required for <strong>geoproximity routing</strong> and carries a monthly charge per policy record.</p>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>DNSSEC</h2>
+        <p>Route 53 supports <strong>DNSSEC signing</strong> for <strong>public hosted zones only</strong>. It cryptographically signs DNS responses to protect against spoofing and tampering.</p>
+        <ul>
+          <li>Private hosted zones do not support DNSSEC.</li>
+          <li>KMS keys for DNSSEC must be in <strong>us-east-1</strong>.</li>
+          <li>DNSSEC increases response size.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Route 53 vs. Global Accelerator</h2>
+        <table>
+          <thead>
+            <tr><th>Feature</th><th>Route 53</th><th>Global Accelerator</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>How it routes</strong></td><td>DNS-based</td><td>Network-layer anycast IPs</td></tr>
+            <tr><td><strong>IP addresses</strong></td><td>Dynamic</td><td><strong>Static</strong></td></tr>
+            <tr><td><strong>Failover speed</strong></td><td>Affected by TTL and caching</td><td><strong>Instant</strong></td></tr>
+            <tr><td><strong>Protocols</strong></td><td>DNS only</td><td>TCP and UDP traffic</td></tr>
+            <tr><td><strong>Use case</strong></td><td>DNS routing and domain management</td><td>Static IPs and fastest failover</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Common architectures</h2>
+        <h3>Active-passive failover</h3>
+<pre>Route 53 (Failover policy)
+|- Primary: ALB in us-east-1
+\- Secondary: ALB in eu-west-1 or maintenance page</pre>
+
+        <h3>Active-active multi-Region</h3>
+<pre>Route 53 (Latency or Weighted policy)
+|- us-east-1: ALB + ASG
+|- eu-west-1: ALB + ASG
+\- ap-southeast-1: ALB + ASG</pre>
+
+        <h3>Blue-green deployment</h3>
+<pre>Route 53 (Weighted policy)
+|- Blue: Weight 100
+\- Green: Weight 0
+Shift weights gradually during deployment.</pre>
+
+        <h3>Static website with custom domain</h3>
+<pre>Route 53 Alias A at zone apex
+\- CloudFront distribution
+   \- Origin: S3 bucket</pre>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quotas and limits</h2>
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Limit</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hosted zones per account</td><td>500 adjustable</td></tr>
+            <tr><td>Records per hosted zone</td><td>10,000 adjustable</td></tr>
+            <tr><td>Health checks per account</td><td>200 adjustable</td></tr>
+            <tr><td>Domains registered per account</td><td>20 adjustable</td></tr>
+            <tr><td>VPCs per private hosted zone</td><td>300</td></tr>
+            <tr><td>Resolver endpoints per Region</td><td>4 per direction</td></tr>
+            <tr><td>IP addresses per Resolver endpoint</td><td>6</td></tr>
+            <tr><td>Name servers per hosted zone</td><td>4 assigned automatically</td></tr>
+            <tr><td>Resolver rules per Region</td><td>1,000</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Cost</h2>
+        <h3>What is free</h3>
+        <ul>
+          <li>Alias queries to AWS resources are free.</li>
+          <li>Domain registration includes a free hosted zone for that domain.</li>
+        </ul>
+
+        <h3>What costs money</h3>
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Pricing</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Hosted zones</td><td>$0.50 per month for the first 25</td></tr>
+            <tr><td>Standard queries</td><td>$0.40 per million queries for the first billion</td></tr>
+            <tr><td>Latency / Geolocation / Geoproximity queries</td><td>$0.60 per million queries</td></tr>
+            <tr><td>Health checks</td><td>$0.50-$0.75 per month</td></tr>
+            <tr><td>Fast health checks</td><td>Additional $1.00 per month</td></tr>
+            <tr><td>Domain registration</td><td>Varies by TLD</td></tr>
+            <tr><td>Traffic Flow policy records</td><td>$50 per policy record per month</td></tr>
+            <tr><td>Resolver endpoints</td><td>Per ENI per hour plus query charges</td></tr>
+            <tr><td>DNSSEC signing</td><td>$0.75 per hosted zone per month</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Cost optimization</h3>
+        <ul>
+          <li>Use Alias records for AWS resources.</li>
+          <li>Raise TTL for stable records.</li>
+          <li>Delete unused health checks.</li>
+          <li>Avoid unnecessary hosted zones.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Common exam traps and edge cases</h2>
+        <ol>
+          <li><strong>CNAME cannot be at zone apex.</strong></li>
+          <li><strong>Alias queries to AWS resources are free; CNAME queries are not.</strong></li>
+          <li><strong>Simple routing does not support health checks.</strong></li>
+          <li><strong>Geolocation is not the same as latency routing.</strong></li>
+          <li><strong>Failover needs a health check on the primary.</strong></li>
+          <li><strong>DNS failover is not instant because TTL matters.</strong></li>
+          <li><strong>Route 53 health checkers cannot reach private resources.</strong></li>
+          <li><strong>Alias cannot point directly to an EC2 public IP.</strong></li>
+          <li><strong>Geolocation needs a default record.</strong></li>
+          <li><strong>Multivalue answer is not a true load balancer.</strong></li>
+          <li><strong>Private hosted zones need VPC DNS settings enabled.</strong></li>
+          <li><strong>Domain registration and DNS hosting are separate services.</strong></li>
+        </ol>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick reference: exam keyword to answer mapping</h2>
+        <table>
+          <thead>
+            <tr><th>Exam keyword / phrase</th><th>Think...</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Point zone apex to ALB, CloudFront, or S3</td><td>Alias record</td></tr>
+            <tr><td>Route traffic to lowest-latency Region</td><td>Latency-based routing</td></tr>
+            <tr><td>Active-passive disaster recovery</td><td>Failover routing plus health check</td></tr>
+            <tr><td>Show localized content by country</td><td>Geolocation routing</td></tr>
+            <tr><td>A/B testing with 10% to a new version</td><td>Weighted routing</td></tr>
+            <tr><td>Gradually shift traffic to a new Region</td><td>Geoproximity routing</td></tr>
+            <tr><td>Return multiple IPs with health checks</td><td>Multivalue answer routing</td></tr>
+            <tr><td>Health check for private resource</td><td>CloudWatch alarm-based health check</td></tr>
+            <tr><td>On-premises resolve AWS private DNS</td><td>Resolver inbound endpoint</td></tr>
+            <tr><td>EC2 resolve on-premises DNS names</td><td>Resolver outbound endpoint</td></tr>
+            <tr><td>Fastest failover without DNS TTL delays</td><td>Global Accelerator</td></tr>
+            <tr><td>Static global IPs</td><td>Global Accelerator</td></tr>
+            <tr><td>Free DNS queries for AWS resources</td><td>Alias records</td></tr>
+            <tr><td>DNS spoofing protection</td><td>DNSSEC</td></tr>
+            <tr><td>Reduce DNS query costs</td><td>Higher TTL plus Alias usage</td></tr>
+            <tr><td>Custom domain for S3 static website</td><td>Route 53 Alias to CloudFront to S3</td></tr>
+            <tr><td>Migrate DNS to Route 53</td><td>Create hosted zone and update NS at registrar</td></tr>
+            <tr><td>Blue-green deployment with DNS</td><td>Weighted routing</td></tr>
+            <tr><td>Resolve internal microservice names in VPC</td><td>Private hosted zone</td></tr>
+            <tr><td>Share DNS forwarding rules across accounts</td><td>Resolver rules plus AWS RAM</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Final mental model</h2>
+        <p>Every Route 53 exam question can be broken down with this sequence:</p>
+        <ol>
+          <li><strong>What type of record?</strong> Apex usually means Alias. Non-AWS domain targets often mean CNAME. IP addresses mean A or AAAA.</li>
+          <li><strong>What routing is needed?</strong> Match the policy to the scenario.</li>
+          <li><strong>Is health checking needed?</strong> Private targets require CloudWatch alarm health checks.</li>
+          <li><strong>Public or private DNS?</strong> Public hosted zone for internet-facing names, private hosted zone for VPC-only resolution.</li>
+          <li><strong>Is hybrid DNS needed?</strong> Resolver inbound and outbound endpoints solve that.</li>
+          <li><strong>Is failover speed critical?</strong> DNS TTL is the limiter; Global Accelerator is the fast-failover answer.</li>
+          <li><strong>What about cost?</strong> Alias is free for AWS resources and TTL affects query volume.</li>
+        </ol>
+        <p>If you can answer these seven questions for any scenario, you can answer any Route 53 question on the SAA-C03.</p>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
