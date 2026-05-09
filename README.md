@@ -7,6 +7,7 @@ Static HTML article site for AWS SAA-C03 study notes.
 - `index.html`
 - `vpc-overview.html`
 - `vpc-cheat-sheet.html`
+- `iam-cheat-sheet.html`
 - `styles.css`
 - `script.js`
 
