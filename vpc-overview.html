@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS VPC Overview: SAA-C03 Landing Page</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --paper-strong: #fffaf0;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --teal-soft: rgba(13, 111, 103, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .hero,
+  .stats article,
+  .card,
+  .checklist,
+  .matrix,
+  .cta {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  .hero {
+    border-radius: 24px;
+    padding: 42px 44px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent);
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 0 0 16px;
+  }
+
+  .deck {
+    margin: 0;
+    max-width: 32em;
+    font-size: 22px;
+    color: var(--text-dim);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 26px;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 12px 18px;
+    border: 1px solid var(--border);
+    background: var(--paper-strong);
+    color: var(--text);
+    text-decoration: none;
+    font: 700 13px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  .button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fffaf2;
+  }
+
+  .hero-aside {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, var(--accent-soft), rgba(255,255,255,0.65));
+    padding: 20px 22px;
+  }
+
+  .hero-aside h2 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    line-height: 1.3;
+  }
+
+  .hero-aside ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  .hero-aside li {
+    font-size: 17px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .stats article {
+    border-radius: 18px;
+    padding: 20px;
+  }
+
+  .stats strong {
+    display: block;
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .stats span {
+    display: block;
+    color: var(--text-dim);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  section {
+    margin-top: 26px;
+  }
+
+  .section-head {
+    max-width: 760px;
+    margin-bottom: 16px;
+  }
+
+  .section-head h2 {
+    font-size: 34px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0 0 12px;
+  }
+
+  .section-head p {
+    margin: 0;
+    font-size: 19px;
+    color: var(--text-dim);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    border-radius: 20px;
+    padding: 24px 24px 22px;
+  }
+
+  .card h3 {
+    margin: 0 0 10px;
+    font: 700 23px/1.2 "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .card p {
+    margin: 0 0 14px;
+    color: var(--text-dim);
+    font-size: 18px;
+  }
+
+  .card ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .card li {
+    color: var(--text-dim);
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .checklist {
+    border-radius: 20px;
+    padding: 12px;
+  }
+
+  .check {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+  }
+
+  .check + .check {
+    margin-top: 10px;
+  }
+
+  .check strong {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #f0e1be;
+    color: var(--accent);
+    font: 700 13px/1 "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .check p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 18px;
+  }
+
+  .matrix {
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .row:first-child {
+    border-top: 0;
+    background: var(--teal-soft);
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .row span {
+    font-size: 17px;
+    color: var(--text-dim);
+  }
+
+  .row:first-child span {
+    color: var(--text-faint);
+    font-size: 12px;
+  }
+
+  .cta {
+    border-radius: 22px;
+    padding: 28px 30px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .cta h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .cta p {
+    margin: 0;
+    font-size: 19px;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 900px) {
+    .hero,
+    .stats,
+    .cards,
+    .split,
+    .row,
+    .cta {
+      grid-template-columns: 1fr;
+    }
+
+    .hero {
+      padding: 28px 22px;
+    }
+
+    .deck {
+      font-size: 18px;
+    }
+
+    .section-head h2 {
+      font-size: 28px;
+    }
+
+    .cta {
+      padding: 22px 20px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html" aria-current="page">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">AWS Networking • SAA-C03</p>
+        <h1>Master VPC design without drowning in documentation.</h1>
+        <p class="deck">A skim-first landing page for the AWS VPC cheat sheet: topology, routing, private access, hybrid networking, security boundaries, and the decision patterns that show up repeatedly on the exam.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#matrix">Explore the decision matrix</a>
+          <a class="button" href="./vpc.html">Open the full VPC guide</a>
+        </div>
+      </div>
+      <aside class="hero-aside">
+        <h2>What this page is for</h2>
+        <ul>
+          <li>Quick recall before practice questions</li>
+          <li>Fast architecture comparison across common VPC choices</li>
+          <li>A front door into the longer VPC guide</li>
+          <li>Exam-safe defaults for the most common scenarios</li>
+        </ul>
+      </aside>
+    </header>
+
+    <section class="stats" aria-label="AWS VPC quick stats">
+      <article>
+        <strong>/28 to /16</strong>
+        <span>Supported primary VPC CIDR size range.</span>
+      </article>
+      <article>
+        <strong>5 IPs reserved</strong>
+        <span>Unavailable inside every subnet, regardless of subnet size.</span>
+      </article>
+      <article>
+        <strong>2 endpoint types</strong>
+        <span>Gateway for S3 or DynamoDB, interface for broader private service access.</span>
+      </article>
+      <article>
+        <strong>1 core habit</strong>
+        <span>Map the requirement to the narrowest AWS networking construct that fully solves it.</span>
+      </article>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <p class="eyebrow">Architecture Map</p>
+        <h2>The VPC domains that decide most answers</h2>
+        <p>These four buckets capture the majority of SAA-C03 VPC questions: how networks are shaped, how traffic moves, how security is enforced, and how AWS services stay private.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <p class="eyebrow">Foundation</p>
+          <h3>VPC core model</h3>
+          <p>Get the Region versus Availability Zone boundaries right first. Most bad answers break here.</p>
+          <ul>
+            <li>A VPC spans a Region, while each subnet exists in exactly one Availability Zone.</li>
+            <li>Default VPCs include an internet gateway and public default subnets in each Availability Zone.</li>
+            <li>AWS reserves five IP addresses per subnet, which affects usable capacity immediately.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Traffic</p>
+          <h3>Routing and internet access</h3>
+          <p>Most internet and hybrid questions reduce to route table targets and the direction of traffic flow.</p>
+          <ul>
+            <li>Every subnet is associated with exactly one route table, and the most specific route wins.</li>
+            <li>Public IPv4 access needs both an internet gateway route and a public or elastic IP.</li>
+            <li>Private IPv4 egress uses NAT Gateway. Private IPv6 egress uses an egress-only internet gateway.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Security</p>
+          <h3>Layered enforcement</h3>
+          <p>Choose security groups, NACLs, and Network Firewall based on scope and inspection depth.</p>
+          <ul>
+            <li>Security groups are stateful and allow-only, so they are the default choice for workload protection.</li>
+            <li>NACLs are stateless and support explicit deny rules at the subnet edge.</li>
+            <li>AWS Network Firewall is for centralized filtering, intrusion prevention, and deeper inspection.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <p class="eyebrow">Private Access</p>
+          <h3>Endpoints and service reachability</h3>
+          <p>The right endpoint depends on where the caller sits and whether traffic must leave the VPC boundary.</p>
+          <ul>
+            <li>Gateway endpoints are free and only support S3 and DynamoDB from within the same VPC.</li>
+            <li>Interface endpoints use PrivateLink, create ENIs, and work for many AWS services.</li>
+            <li>Private DNS on the endpoint and VPC DNS settings must align for standard AWS hostnames to resolve privately.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="split">
+      <div class="section-head">
+        <p class="eyebrow">Exam Traps</p>
+        <h2>Facts worth memorizing exactly</h2>
+        <p>These are the details that often separate the best answer from a tempting distractor.</p>
+      </div>
+      <div class="checklist">
+        <div class="check">
+          <strong>1</strong>
+          <p>Gateway endpoints do not support on-premises access. Use an interface endpoint over Direct Connect or VPN.</p>
+        </div>
+        <div class="check">
+          <strong>2</strong>
+          <p>VPC peering is never transitive. If A talks to B and B talks to C, A still cannot talk to C through B.</p>
+        </div>
+        <div class="check">
+          <strong>3</strong>
+          <p>NAT Gateway is IPv4 only. For outbound-only IPv6 internet access, use an egress-only internet gateway.</p>
+        </div>
+        <div class="check">
+          <strong>4</strong>
+          <p>VPC Flow Logs capture traffic metadata, not packet payloads. Use Traffic Mirroring when payload inspection matters.</p>
+        </div>
+        <div class="check">
+          <strong>5</strong>
+          <p>Hybrid DNS needs Route 53 Resolver inbound and outbound endpoints for full bidirectional name resolution.</p>
+        </div>
+        <div class="check">
+          <strong>6</strong>
+          <p>Direct Connect is private but not encrypted by default. Add VPN on top when encryption is required.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="matrix">
+      <div class="section-head">
+        <p class="eyebrow">Decision Matrix</p>
+        <h2>Translate a scenario into the right AWS answer fast</h2>
+        <p>This is the skim version of the cheat sheet’s quick decision table. Each row points to the most exam-safe answer for a common requirement.</p>
+      </div>
+      <div class="matrix" role="table" aria-label="AWS VPC decision matrix">
+        <div class="row" role="row">
+          <span role="columnheader">Scenario</span>
+          <span role="columnheader">Recommended solution</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Private subnet needs internet access</span>
+          <span role="cell">NAT Gateway for IPv4, or egress-only internet gateway for IPv6</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Access S3 from a private subnet</span>
+          <span role="cell">Gateway endpoint</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Access AWS services from on-premises</span>
+          <span role="cell">Interface endpoint over Direct Connect or VPN</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Connect a few VPCs directly</span>
+          <span role="cell">VPC peering</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Connect many VPCs with transitive routing</span>
+          <span role="cell">Transit Gateway</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Block a specific malicious CIDR across a subnet</span>
+          <span role="cell">NACL deny rule</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Allow only the application tier to reach the database tier</span>
+          <span role="cell">Security group reference</span>
+        </div>
+        <div class="row" role="row">
+          <span role="cell">Deep traffic or payload inspection</span>
+          <span role="cell">Traffic Mirroring or AWS Network Firewall, depending on the inspection requirement</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div>
+        <p class="eyebrow">Next Step</p>
+        <h2>Use this as the front door, then drop into the full guide.</h2>
+        <p>The overview is optimized for recall and quick comparison. The long-form VPC page still holds the deeper explanations, examples, and edge cases.</p>
+      </div>
+      <a class="button primary" href="./vpc.html">Read the complete VPC guide</a>
+    </section>
+  </main>
+</body>
+</html>

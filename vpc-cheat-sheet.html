@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS VPC Cheat Sheet: Complete SAA-C03 Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(19px, 2.45vw, 27px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  ul {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 13px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+
+    li {
+      font-size: 11px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html" aria-current="page">VPC Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS VPC - Complete SAA-C03 Cheat Sheet</h1>
+        <p class="deck">A simple text reader version of the full VPC cheat sheet, preserving the original section structure and decision matrix.</p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>1. VPC Fundamentals</h2>
+        <ul>
+          <li>VPC is Region-wide and spans all AZs in that Region. Subnets are AZ-specific - one subnet lives in exactly one AZ.</li>
+          <li>Default VPC: Every Region comes with a default VPC (CIDR 172.31.0.0/16) with a default subnet in each AZ, an attached IGW, and a default NACL that allows all traffic. Default subnets are public (they auto-assign public IPs).</li>
+          <li>VPC CIDR range: minimum /28 (16 IPs), maximum /16 (65,536 IPs).</li>
+          <li>You can add secondary CIDR blocks to an existing VPC (up to 5, extendable to 50), but they must not overlap with the primary CIDR or any peered VPC CIDRs.</li>
+          <li>AWS reserves 5 IPs in every subnet: .0 (network address), .1 (VPC router), .2 (DNS server), .3 (reserved for future use), .255 (broadcast). So a /24 subnet gives you 251 usable IPs, not 256.</li>
+          <li>Tenancy: Default (shared hardware) or Dedicated (single-tenant hardware). Setting a VPC to dedicated forces all instances in it to launch on dedicated hardware - this cannot be changed back to default.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>2. Routing</h2>
+        <ul>
+          <li>Every VPC has a main route table. Every subnet must be associated with exactly one route table. If you don't explicitly associate one, the subnet uses the main route table.</li>
+          <li>IGW and Route Tables are Region-wide resources. Recommended practice is to create a Route Table specific to each AZ for better isolation and high availability.</li>
+          <li>Most specific route wins. If your table has 0.0.0.0/0 -&gt; IGW and 10.0.0.0/16 -&gt; local, traffic to 10.0.0.5 goes local because /16 is more specific than /0.</li>
+          <li>The "local" route (for intra-VPC traffic) is always present and cannot be removed or overridden.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>3. Security - NACLs vs Security Groups</h2>
+        <ul>
+          <li><strong>NACL (Network ACL):</strong> Subnet-level, stateless, supports both Allow and Deny rules. Rules are evaluated in number order (lowest first) - first match wins, remaining rules are skipped. The default NACL allows all inbound and outbound. A custom NACL denies everything by default until you add rules.</li>
+          <li><strong>Security Group:</strong> Instance-level (ENI-level), stateful (return traffic is automatically allowed), supports only Allow rules (no explicit Deny). Default SG allows all outbound and allows inbound only from the same SG.</li>
+          <li>Because NACLs are stateless, return traffic must be explicitly allowed. If you allow inbound TCP 443, you must also allow outbound on ephemeral ports (1024-65535) for responses to flow back. This is the #1 NACL troubleshooting trap on the exam.</li>
+          <li>Security Groups can reference other Security Groups as sources/destinations - not just IP ranges. This is a powerful pattern for multi-tier architectures (e.g., "allow inbound on port 3306 only from the web-tier SG").</li>
+          <li>Security Groups are stateful per connection: if you allow inbound on port 80, the response is automatically allowed. But if you initiate a new outbound connection, you need an outbound rule for it.</li>
+          <li><strong>Layered security model:</strong> Use Security Groups as the primary defense (allow-list model) and NACLs as a secondary subnet-wide guardrail (e.g., explicitly block a known malicious IP range across the entire subnet).</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>4. VPC Flow Logs</h2>
+        <ul>
+          <li>Flow Logs capture IP traffic metadata (not packet contents) - source/dest IPs, ports, protocol, action (ACCEPT/REJECT), and byte/packet counts.</li>
+          <li>Can be enabled at three levels: VPC (all traffic), Subnet (all ENIs in that subnet), or ENI (single interface).</li>
+          <li>For targeted logging (e.g., traffic between two specific subnets), enable at the subnet level - it automatically covers all current and future ENIs without per-instance management.</li>
+          <li>Destinations: CloudWatch Logs (near real-time analysis, metric filters, alarms), S3 (cost-effective long-term storage, Athena queries), or Kinesis Data Firehose.</li>
+          <li>Flow Logs do NOT capture: DNS traffic to the VPC DNS server, DHCP traffic, traffic to the instance metadata service (169.254.169.254), or traffic to/from the Amazon Time Sync Service.</li>
+          <li>Flow Logs cannot be modified after creation - you must delete and recreate.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>5. Internet Access</h2>
+        <ul>
+          <li>A subnet is public if its route table has a route to an IGW (0.0.0.0/0 -&gt; igw-xxx) AND instances have public/Elastic IPs. A subnet is private if it lacks this route.</li>
+          <li><strong>NAT Gateway:</strong> Managed, placed in a public subnet with an Elastic IP. Private subnet route table needs 0.0.0.0/0 -&gt; nat-gw-xxx. NAT Gateway does NOT have a Security Group. It is AZ-specific - for high availability, deploy one NAT Gateway per AZ with each private subnet routing to the NAT Gateway in its own AZ.</li>
+          <li><strong>NAT Gateway is IPv4 only.</strong> For IPv6 outbound-only internet access (no inbound initiation from the internet), use an <strong>Egress-Only Internet Gateway</strong>. NAT is an IPv4 concept - IPv6's vast address space makes it unnecessary.</li>
+          <li><strong>NAT Instance (legacy):</strong> An EC2 instance performing NAT. Must disable source/destination check. Has a Security Group. Not managed, not highly available by default. Know this exists but NAT Gateway is the recommended answer on the exam.</li>
+          <li><strong>IPv6 in VPC:</strong> AWS assigns a /56 IPv6 CIDR to the VPC and /64 to subnets. All IPv6 addresses are globally unique and public - there is no "private" IPv6. Use Egress-Only IGW to allow outbound-only.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>6. VPC Endpoints - AWS Service Access</h2>
+        <ul>
+          <li><strong>Gateway Endpoint:</strong> For S3 and DynamoDB only. Free. Uses route table entries pointing to a prefix list. Regional - only works for buckets/tables in the same Region. Cannot be accessed from on-premises or from a peered VPC.</li>
+          <li><strong>Interface Endpoint (AWS PrivateLink):</strong> For 80+ AWS services (including S3 as an alternative). Costs money (hourly + data). Creates an ENI with a private IP in your subnet. Uses DNS - not route tables. Can be accessed from on-premises via DX/VPN and from peered VPCs.</li>
+          <li><strong>Gateway vs Interface - when to use which for S3:</strong>
+            <ul>
+              <li>From within the same VPC -&gt; Gateway Endpoint (free, simple).</li>
+              <li>From on-premises or peered VPCs -&gt; Interface Endpoint (because Gateway Endpoints are not reachable from outside the VPC).</li>
+            </ul>
+          </li>
+          <li><strong>VPC Endpoint Policies:</strong> Both Gateway and Interface Endpoints support resource-based policies that control which AWS principals can use the endpoint and which resources they can access (e.g., restrict to specific S3 buckets). This is an additional layer on top of IAM policies.</li>
+          <li><strong>Interface Endpoint Private DNS:</strong> To make the default service hostname (e.g., <code>ec2.eu-west-1.amazonaws.com</code>) resolve to the endpoint's private IPs, you must enable: (1) Private DNS on the VPC endpoint, AND (2) DNS Resolution and DNS Hostnames on the VPC. Both are required.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>7. Custom Service Access (PrivateLink)</h2>
+        <ul>
+          <li>Use PrivateLink to expose your own service to other VPCs/accounts privately (no internet, no peering, no Transit Gateway needed).</li>
+          <li>Architecture: Producer VPC creates a VPC Endpoint Service pointing to an NLB (Network Load Balancer). Consumer VPC creates an Interface Endpoint to connect.</li>
+          <li>Traffic flows over the AWS backbone, never the public internet. The consumer only sees the ENI IP - they never see the producer's VPC CIDR.</li>
+          <li>Supports cross-account and cross-Region access.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>8. VPC Peering</h2>
+        <ul>
+          <li>VPC peering is non-transitive. A↔B and B↔C does NOT mean A↔C. You must create a direct peering connection for every pair that needs to communicate.</li>
+          <li>Works cross-account and cross-Region.</li>
+          <li>CIDRs must not overlap between peered VPCs.</li>
+          <li>You must update route tables in BOTH VPCs to route traffic to each other's CIDR via the peering connection.</li>
+          <li>Peering does not support edge-to-edge routing: you cannot use a peered VPC's IGW, NAT Gateway, VPN connection, or Direct Connect to access resources through it.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>9. Transit Gateway (TGW)</h2>
+        <ul>
+          <li>Regional hub-and-spoke service. Attach VPCs, VPN connections, Direct Connect gateways, and other Transit Gateways (inter-Region peering).</li>
+          <li>Supports transitive routing - solves the "full mesh peering" problem at scale. If 10 VPCs are attached, they can all communicate through TGW without 45 peering connections.</li>
+          <li>Uses route tables for fine-grained control (e.g., isolate production VPCs from development VPCs).</li>
+          <li>Supports multicast.</li>
+          <li>Can be shared across accounts via AWS RAM (Resource Access Manager).</li>
+          <li><strong>When to choose TGW vs Peering:</strong> Peering for a few VPCs with simple connectivity. TGW for many VPCs, on-premises integration, or complex routing requirements.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>10. On-Premises Connectivity</h2>
+        <ul>
+          <li><strong>Direct Connect (DX):</strong> Physical dedicated fiber connection between on-premises and AWS. Takes weeks/months to set up. Provides consistent bandwidth (1 Gbps, 10 Gbps, 100 Gbps), low latency, and private connectivity. NOT encrypted by default - add a VPN on top of DX for encryption.</li>
+          <li><strong>Site-to-Site VPN:</strong> Encrypted IPSec tunnel over the public internet. Quick to set up (minutes). Less reliable than DX (internet-dependent). Requires a Virtual Private Gateway (or Transit Gateway) on the AWS side and a Customer Gateway on the on-premises side.</li>
+          <li><strong>DX + VPN combination:</strong> For encrypted, high-bandwidth, reliable connectivity. Run a VPN connection over the Direct Connect link.</li>
+          <li><strong>Direct Connect Gateway:</strong> Allows a single DX connection to access VPCs in multiple Regions.</li>
+          <li><strong>VPN CloudHub:</strong> Allows multiple on-premises sites to communicate with each other through a Virtual Private Gateway using multiple VPN connections in a hub-and-spoke model.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>11. On-Premises AWS Service Access</h2>
+        <ul>
+          <li>To access any AWS service (including S3) from on-premises, you must use an Interface Endpoint. Connect to that endpoint via Direct Connect or VPN through a Transit Gateway or Virtual Private Gateway.</li>
+          <li>Gateway Endpoints cannot be reached from on-premises - only Interface Endpoints can.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>12. DNS Resolution (Hybrid)</h2>
+        <ul>
+          <li><strong>VPC DNS:</strong> The VPC DNS server runs at the VPC base CIDR + 2 (e.g., 10.0.0.2). Enable DNS Resolution (enableDnsSupport) for instances to use it. Enable DNS Hostnames (enableDnsHostnames) for instances to get public DNS names.</li>
+          <li><strong>Route 53 Private Hosted Zones:</strong> Create DNS records that are only resolvable from within associated VPCs. A private hosted zone can be associated with VPCs across accounts.</li>
+          <li><strong>Route 53 Resolver Inbound Endpoint:</strong> On-premises DNS forwards queries to this endpoint -&gt; resolves VPC private hosted zones from on-prem.</li>
+          <li><strong>Route 53 Resolver Outbound Endpoint:</strong> VPC instances forward DNS queries through this endpoint -&gt; resolves on-premises domain names from VPC. Requires forwarding rules specifying which domains go to which on-prem DNS servers.</li>
+          <li>You need BOTH endpoints for full bidirectional hybrid DNS resolution.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>13. Network Firewall vs NACLs vs Security Groups</h2>
+        <ul>
+          <li><strong>Security Groups:</strong> First line of defense. Instance/ENI-level. Stateful. Allow-only rules. Best for: controlling access to individual resources.</li>
+          <li><strong>NACLs:</strong> Second line of defense. Subnet-level. Stateless. Allow and Deny rules. Best for: blocking specific IPs or CIDR ranges across an entire subnet.</li>
+          <li><strong>AWS Network Firewall:</strong> Managed firewall service deployed in its own subnet. Supports deep packet inspection, intrusion prevention (IPS), domain-name filtering (allow/block traffic to specific domains), and protocol-level rules. Best for: enterprise-grade perimeter security, compliance, centralized traffic filtering across VPCs via Transit Gateway.</li>
+          <li><strong>Exam decision pattern:</strong> Simple allow/deny by IP -&gt; NACL. Per-instance access control -&gt; Security Group. Domain filtering, IPS, deep inspection -&gt; Network Firewall.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>14. Elastic Network Interfaces (ENI), Elastic IP, Elastic Fabric Adapter</h2>
+        <ul>
+          <li><strong>ENI:</strong> Virtual network card. Each instance has a primary ENI (eth0) that cannot be detached. You can attach secondary ENIs for multi-homed instances, management networks, or failover (move an ENI from one instance to another to redirect traffic).</li>
+          <li><strong>Elastic IP:</strong> Static public IPv4 address. You are charged if it is NOT attached to a running instance (to discourage waste). Limited to 5 per Region by default.</li>
+          <li><strong>Enhanced Networking (SR-IOV):</strong> Higher bandwidth, lower latency. Use ENA (Elastic Network Adapter) - supports up to 100 Gbps. Exam may also mention Intel VF (legacy, up to 10 Gbps).</li>
+          <li><strong>Elastic Fabric Adapter (EFA):</strong> For HPC (High Performance Computing) and ML workloads. Provides OS-bypass for ultra-low latency inter-instance communication. Only works on Linux.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>15. Traffic Mirroring</h2>
+        <ul>
+          <li>Copies actual network packets (not just metadata like Flow Logs) from an ENI to a target (another ENI or a Network Load Balancer) for deep packet inspection, content analysis, or threat monitoring.</li>
+          <li>Use when Flow Logs aren't enough - when you need to see payload data, not just headers.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick Decision Matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Private subnet needs internet</td><td>NAT Gateway (IPv4) / Egress-Only IGW (IPv6)</td></tr>
+            <tr><td>Access S3 from private subnet</td><td>Gateway Endpoint (free)</td></tr>
+            <tr><td>Access S3 from on-premises</td><td>Interface Endpoint via DX/VPN</td></tr>
+            <tr><td>Access other AWS services privately</td><td>Interface Endpoint</td></tr>
+            <tr><td>Expose your service to other VPCs</td><td>PrivateLink (NLB + Endpoint Service)</td></tr>
+            <tr><td>2-3 VPCs need to communicate</td><td>VPC Peering</td></tr>
+            <tr><td>50+ VPCs + on-prem connectivity</td><td>Transit Gateway</td></tr>
+            <tr><td>Block a specific IP at subnet level</td><td>NACL Deny rule</td></tr>
+            <tr><td>Allow only web-tier to reach DB-tier</td><td>Security Group referencing another SG</td></tr>
+            <tr><td>Domain-based filtering / IPS</td><td>AWS Network Firewall</td></tr>
+            <tr><td>Hybrid DNS (on-prem ↔ VPC)</td><td>Route 53 Resolver Inbound + Outbound Endpoints</td></tr>
+            <tr><td>Encrypted dedicated link to AWS</td><td>Direct Connect + VPN on top</td></tr>
+            <tr><td>Deep packet inspection / forensics</td><td>Traffic Mirroring</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

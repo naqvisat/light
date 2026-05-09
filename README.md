@@ -1,10 +1,12 @@
 # light
 
-Static HTML article site for AWS IAM notes.
+Static HTML article site for AWS SAA-C03 study notes.
 
 ## Files
 
 - `index.html`
+- `vpc-overview.html`
+- `vpc-cheat-sheet.html`
 - `styles.css`
 - `script.js`
 

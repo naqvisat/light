@@ -193,6 +193,18 @@
     color: var(--text-dim);
   }
 
+  .jump {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--accent-soft);
+  }
+
+  .jump p:last-child {
+    margin-bottom: 0;
+  }
+
   @media (max-width: 768px) {
     .page {
       padding-top: 24px;
@@ -256,6 +268,8 @@
     <nav class="topnav" aria-label="Site sections">
       <a class="navlink" href="./index.html">IAM</a>
       <a class="navlink" href="./vpc.html" aria-current="page">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
       <a class="navlink" href="./s3.html">S3</a>
       <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
       <a class="navlink" href="./efs.html">EFS</a>
@@ -267,6 +281,9 @@
       <header>
         <h1>AWS VPC: The Complete Guide for SAA-C03</h1>
         <p class="deck"><em>Everything you need to know about Virtual Private Cloud &mdash; every definition, every component, every connectivity pattern, edge cases, hard limits, cost considerations, and exam traps &mdash; in one place.</em></p>
+        <div class="jump">
+          <p><strong>Need the skim version first?</strong> Open the <a href="./vpc-overview.html">VPC overview landing page</a> for the quick architecture map, exam traps, and decision matrix before diving into the full guide.</p>
+        </div>
       </header>
 
       <hr>
