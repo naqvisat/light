@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS Storage Cheat Sheet: Instance Store, EBS, EFS, FSx</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(19px, 2.45vw, 27px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  ul {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 13px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+
+    li {
+      font-size: 11px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./iam-cheat-sheet.html">IAM Cheat Sheet</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./ec2-cheat-sheet.html">EC2 Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./s3-cheat-sheet.html">S3 Cheat Sheet</a>
+      <a class="navlink" href="./storage-cheat-sheet.html" aria-current="page">Storage Cheat Sheet</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS Storage - Instance Store, EBS, EFS &amp; FSx - Complete SAA-C03 Cheat Sheet</h1>
+        <p class="deck">A simple text reader version of the storage cheat sheet covering Instance Store, EBS, EFS, FSx, hybrid storage, backups, and migration patterns.</p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>1. Storage Types Overview</h2>
+        <ul>
+          <li>AWS offers four main categories of storage attached to or accessible from EC2 instances.</li>
+          <li><strong>Instance Store:</strong> Ephemeral, physically attached block storage. Highest performance. Data lost on stop or terminate.</li>
+          <li><strong>EBS (Elastic Block Store):</strong> Persistent, network-attached block storage. One instance per volume by default. AZ-specific.</li>
+          <li><strong>EFS (Elastic File System):</strong> Managed NFS file system. Shared across many instances. Multi-AZ. Linux only.</li>
+          <li><strong>FSx:</strong> Managed third-party file systems for Windows, Lustre, NetApp ONTAP, and OpenZFS workloads.</li>
+          <li><strong>Block storage:</strong> Instance Store and EBS. <strong>File storage:</strong> EFS and FSx.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>2. EC2 Instance Store - Deep Dive</h2>
+        <ul>
+          <li>Physically attached NVMe SSD or HDD disks on the host server, included with certain instance types.</li>
+          <li><strong>Performance:</strong> Highest possible IOPS of any EC2 storage option, often millions of IOPS.</li>
+          <li><strong>Ephemeral:</strong> Data is lost when the instance is stopped, terminated, or the host hardware fails. Data survives reboot.</li>
+          <li>Cannot be detached, resized, or natively snapshotted. You must manually copy data elsewhere for backup.</li>
+          <li>Size, type, and count are determined by the instance type.</li>
+          <li>Best for buffer, cache, scratch data, swap space, and transient high-IOPS workloads.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>3. EBS (Elastic Block Store) - Fundamentals</h2>
+        <ul>
+          <li>Network-attached block storage that behaves like a virtual hard drive.</li>
+          <li><strong>Persistence:</strong> Data survives stop and restart, and can survive termination if Delete on Termination is disabled.</li>
+          <li><strong>AZ-specific:</strong> A volume exists in one AZ and can only attach to instances in that same AZ.</li>
+          <li><strong>One-to-one attachment:</strong> One volume to one instance by default, except Multi-Attach for io1 and io2.</li>
+          <li>Volumes can be detached and attached to another instance in the same AZ without data loss.</li>
+          <li><strong>Encryption:</strong> AES-256 with KMS for data at rest and in transit.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>4. EBS Volume Types - SSD</h2>
+        <ul>
+          <li><strong>gp3:</strong> Default SSD choice with independent scaling for IOPS and throughput.</li>
+          <li><strong>gp2:</strong> Older general-purpose SSD where IOPS scales with size.</li>
+          <li><strong>io2 Block Express:</strong> Highest-performance EBS volume, up to 256,000 IOPS and 4,000 MB/s throughput.</li>
+          <li><strong>io2:</strong> Provisioned IOPS SSD up to 64,000 IOPS with 99.999 percent durability.</li>
+          <li><strong>io1:</strong> Older provisioned IOPS generation being replaced by io2.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>5. EBS Volume Types - HDD</h2>
+        <ul>
+          <li><strong>st1:</strong> Throughput Optimized HDD for sequential workloads like big data and log processing. Cannot be a boot volume.</li>
+          <li><strong>sc1:</strong> Cold HDD for the cheapest infrequently accessed storage. Cannot be a boot volume.</li>
+          <li><strong>HDD exam rule:</strong> If the question says boot volume, eliminate st1 and sc1.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>6. EBS Multi-Attach</h2>
+        <ul>
+          <li>Attach one io1 or io2 volume to up to 16 Nitro-based instances in the same AZ.</li>
+          <li>All instances can read and write concurrently.</li>
+          <li>The application must manage concurrent writes using a cluster-aware file system or coordination layer.</li>
+          <li>Use for clustered applications that need shared block storage in one AZ.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>7. EBS Snapshots - Deep Dive</h2>
+        <ul>
+          <li>Point-in-time EBS backups stored in S3 and managed by AWS. Incremental after the first snapshot.</li>
+          <li>Snapshots are Region-specific but can be copied cross-Region or shared cross-account.</li>
+          <li>To move a volume, snapshot it and create a new volume in the target AZ or Region.</li>
+          <li><strong>Snapshot lifecycle automation:</strong> Use Amazon Data Lifecycle Manager (DLM).</li>
+          <li><strong>EBS Snapshot Archive:</strong> Cheaper long-term tier with 24 to 72 hour retrieval.</li>
+          <li><strong>Recycle Bin:</strong> Protects snapshots from accidental deletion.</li>
+          <li><strong>Fast Snapshot Restore:</strong> Pre-warms volumes created from snapshots for immediate full performance.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>8. EBS RAID Configurations</h2>
+        <ul>
+          <li><strong>RAID 0:</strong> Striping for higher performance. No redundancy.</li>
+          <li><strong>RAID 1:</strong> Mirroring for redundancy at the cost of usable capacity.</li>
+          <li><strong>RAID 5 and RAID 6:</strong> Not recommended by AWS for EBS due to parity overhead.</li>
+          <li>Exam pattern: more than 64,000 IOPS may mean RAID 0 with multiple io2 volumes or io2 Block Express.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>9. EBS vs Instance Store - Comparison</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>EBS</th>
+              <th>Instance Store</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Attachment</td><td>Network-attached</td><td>Physically attached</td></tr>
+            <tr><td>Persistence</td><td>Persists independently of instance</td><td>Lost on stop, terminate, or hardware failure</td></tr>
+            <tr><td>Max IOPS</td><td>Up to 256,000</td><td>Millions</td></tr>
+            <tr><td>Snapshots</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Detachable</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Boot volume</td><td>Yes for SSD types</td><td>No on modern instance types</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>10. EFS (Elastic File System) - Fundamentals</h2>
+        <ul>
+          <li>Managed, serverless NFS file system with pay-per-use pricing.</li>
+          <li><strong>Multi-AZ by default:</strong> Can be mounted by many instances across AZs simultaneously.</li>
+          <li><strong>Linux only.</strong> For Windows shared storage, use FSx for Windows File Server.</li>
+          <li>Use for CMS, web serving, home directories, analytics, containers, and ML training data.</li>
+          <li>Compatible with EC2, ECS, EKS, Fargate, Lambda, and on-premises over DX or VPN.</li>
+          <li>Security includes KMS encryption, TLS in transit, POSIX permissions, security groups, IAM, and Access Points.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>11. EFS Performance</h2>
+        <ul>
+          <li><strong>Performance Modes:</strong> General Purpose for low latency and Max I/O for very large parallel workloads.</li>
+          <li><strong>Throughput Modes:</strong> Bursting, Elastic, and Provisioned.</li>
+          <li><strong>Exam pattern:</strong> Small file system but high throughput requirement means Elastic or Provisioned throughput mode.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>12. EFS Storage Classes &amp; Lifecycle</h2>
+        <ul>
+          <li><strong>Standard:</strong> Frequently accessed, multi-AZ storage.</li>
+          <li><strong>Infrequent Access (IA):</strong> Lower storage cost with small access charges.</li>
+          <li><strong>One Zone:</strong> Single-AZ storage with lower cost and lower durability.</li>
+          <li><strong>Archive:</strong> Lowest-cost tier for very rarely accessed data.</li>
+          <li><strong>EFS Lifecycle Management:</strong> Automatically moves files between tiers and can transition them back on access.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>13. EFS Access Points</h2>
+        <ul>
+          <li>Application-specific entry points into an EFS file system.</li>
+          <li>Each access point enforces a POSIX identity, root directory, and permissions.</li>
+          <li>Useful for multi-tenant environments and least-privilege application access.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>14. EFS vs EBS - Comparison</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>EFS</th>
+              <th>EBS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Type</td><td>File storage (NFS)</td><td>Block storage</td></tr>
+            <tr><td>Multi-AZ</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Multi-instance access</td><td>Yes</td><td>No, except Multi-Attach</td></tr>
+            <tr><td>OS support</td><td>Linux only</td><td>Linux and Windows</td></tr>
+            <tr><td>Boot volume</td><td>No</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>15. Amazon FSx - Overview</h2>
+        <ul>
+          <li>FSx provides fully managed third-party file systems optimized for specific workloads.</li>
+          <li>Variants: FSx for Windows File Server, FSx for Lustre, FSx for NetApp ONTAP, and FSx for OpenZFS.</li>
+          <li>Key differentiator from EFS: FSx supports Windows, HPC-specific systems, and advanced enterprise storage features.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>16. FSx for Windows File Server</h2>
+        <ul>
+          <li>Fully managed Windows-native file system built on Windows Server.</li>
+          <li><strong>Protocol:</strong> SMB, plus optional NFS access.</li>
+          <li><strong>Active Directory integration:</strong> Supports AWS Managed Microsoft AD or self-managed AD.</li>
+          <li>Features include DFS, shadow copies, deduplication, and automatic daily backups.</li>
+          <li>Multi-AZ option provides active/standby high availability with automatic failover.</li>
+          <li>Best for Windows shared storage and AD-integrated file share migrations.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>17. FSx for Lustre</h2>
+        <ul>
+          <li>High-performance parallel file system for compute-intensive workloads.</li>
+          <li>Best for machine learning training, HPC, financial modeling, rendering, genomics, and similar workloads.</li>
+          <li><strong>Native S3 integration:</strong> Link an S3 bucket and lazily load data on first access, with optional sync back to S3.</li>
+          <li><strong>Scratch:</strong> Temporary highest-performance deployment with no replication.</li>
+          <li><strong>Persistent:</strong> Long-term deployment with replicated data and failover.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>18. FSx for NetApp ONTAP</h2>
+        <ul>
+          <li>Feature-rich managed NetApp ONTAP file system supporting NFS, SMB, and iSCSI simultaneously.</li>
+          <li>Features include snapshots, FlexClone, compression, deduplication, replication, and data tiering.</li>
+          <li>Supports multi-AZ deployment with automatic failover.</li>
+          <li>Best for multi-protocol access, NetApp migrations, and instant zero-space clones for dev and test.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>19. FSx for OpenZFS</h2>
+        <ul>
+          <li>Managed file system built on OpenZFS for Linux and macOS workloads.</li>
+          <li><strong>Protocol:</strong> NFS only.</li>
+          <li>Supports snapshots, cloning, and automatic compression.</li>
+          <li>No SMB, no iSCSI, and no multi-AZ deployment.</li>
+          <li>Best for ZFS migrations and high-IOPS NFS workloads.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>20. FSx Comparison Table</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>FSx Windows</th>
+              <th>FSx Lustre</th>
+              <th>FSx ONTAP</th>
+              <th>FSx OpenZFS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Protocol</td><td>SMB (+ NFS)</td><td>POSIX</td><td>NFS, SMB, iSCSI</td><td>NFS</td></tr>
+            <tr><td>OS Support</td><td>Windows + Linux</td><td>Linux only</td><td>Windows, Linux, macOS</td><td>Linux, macOS</td></tr>
+            <tr><td>Multi-AZ</td><td>Yes</td><td>No</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Best For</td><td>Windows enterprise</td><td>HPC, ML, rendering</td><td>Multi-protocol, migration</td><td>ZFS migration, high IOPS NFS</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>21. AWS Backup</h2>
+        <ul>
+          <li>Centralized backup service across EBS, EFS, FSx, RDS, DynamoDB, Aurora, S3, and more.</li>
+          <li><strong>Backup Plans:</strong> Define schedules, retention, cold storage transitions, and cross-Region copy rules.</li>
+          <li><strong>Backup Vault:</strong> Stores backups and can use Vault Lock for immutable WORM compliance.</li>
+          <li>Supports cross-Region and cross-account copy for DR and isolation.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>22. AWS Storage Gateway - Hybrid Storage</h2>
+        <ul>
+          <li>Bridges on-premises infrastructure with AWS storage.</li>
+          <li><strong>S3 File Gateway:</strong> On-premises NFS or SMB share backed by S3.</li>
+          <li><strong>FSx File Gateway:</strong> Local cache for FSx for Windows File Server shares.</li>
+          <li><strong>Volume Gateway:</strong> iSCSI block storage backed by S3 in Cached or Stored mode.</li>
+          <li><strong>Tape Gateway:</strong> Virtual tape library backed by S3 and Glacier.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>23. AWS DataSync</h2>
+        <ul>
+          <li>Managed data transfer service for moving data between on-premises and AWS, or between AWS services.</li>
+          <li>Supports NFS, SMB, HDFS, object storage, S3, EFS, and all FSx variants.</li>
+          <li>Features include encryption, integrity validation, scheduling, filtering, and bandwidth throttling.</li>
+          <li><strong>DataSync vs Storage Gateway:</strong> DataSync moves data. Storage Gateway provides ongoing hybrid access.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>24. AWS Snow Family</h2>
+        <ul>
+          <li>Physical devices for offline data transfer and edge computing.</li>
+          <li><strong>Snowcone:</strong> Smallest device for portable and rugged use cases.</li>
+          <li><strong>Snowball Edge Storage Optimized:</strong> Best for large-scale migration and local storage.</li>
+          <li><strong>Snowball Edge Compute Optimized:</strong> Best for edge ML inference and disconnected compute.</li>
+          <li><strong>Snowmobile:</strong> Up to 100 PB per truck for exabyte-scale migrations.</li>
+          <li><strong>Rule of thumb:</strong> If network transfer takes more than a week, use Snow Family.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick Decision Matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Highest possible IOPS, temporary data</td><td>EC2 Instance Store</td></tr>
+            <tr><td>Persistent boot volume, general purpose</td><td>EBS gp3</td></tr>
+            <tr><td>Critical database, sustained high IOPS</td><td>EBS io2 or io2 Block Express</td></tr>
+            <tr><td>Big data sequential reads, high throughput (non-boot)</td><td>EBS st1</td></tr>
+            <tr><td>Cheapest storage for infrequent access (non-boot)</td><td>EBS sc1</td></tr>
+            <tr><td>Move EBS volume to another AZ</td><td>Snapshot then create volume in target AZ</td></tr>
+            <tr><td>Move EBS volume to another Region</td><td>Snapshot then copy to Region then create volume</td></tr>
+            <tr><td>Encrypt an existing unencrypted volume</td><td>Snapshot then copy with encryption then create encrypted volume</td></tr>
+            <tr><td>Multiple instances need shared block storage (same AZ)</td><td>EBS Multi-Attach</td></tr>
+            <tr><td>Application needs more than 64,000 IOPS on a single volume</td><td>io2 Block Express</td></tr>
+            <tr><td>Application needs more than 256,000 IOPS</td><td>Instance Store or RAID 0 with multiple io2 volumes</td></tr>
+            <tr><td>Protect snapshots from accidental deletion</td><td>EBS Snapshot Recycle Bin</td></tr>
+            <tr><td>Automate snapshot lifecycle</td><td>Amazon Data Lifecycle Manager</td></tr>
+            <tr><td>Cheapest long-term snapshot storage</td><td>EBS Snapshot Archive</td></tr>
+            <tr><td>Volume from snapshot needs instant full performance</td><td>Fast Snapshot Restore</td></tr>
+            <tr><td>Shared file storage, Linux, multi-AZ</td><td>EFS</td></tr>
+            <tr><td>Shared file storage, Windows, AD integration</td><td>FSx for Windows File Server</td></tr>
+            <tr><td>HPC or ML training on large datasets from S3</td><td>FSx for Lustre</td></tr>
+            <tr><td>Multi-protocol NFS + SMB + iSCSI same data</td><td>FSx for NetApp ONTAP</td></tr>
+            <tr><td>Migrate on-premises ZFS to AWS</td><td>FSx for OpenZFS</td></tr>
+            <tr><td>Instant zero-space clones for dev or test</td><td>FSx for NetApp ONTAP</td></tr>
+            <tr><td>Reduce EFS costs automatically</td><td>EFS Lifecycle Management</td></tr>
+            <tr><td>Multiple apps need isolated EFS access</td><td>EFS Access Points</td></tr>
+            <tr><td>Small EFS but high throughput needed</td><td>EFS Elastic or Provisioned throughput</td></tr>
+            <tr><td>Centralized backup across all storage types</td><td>AWS Backup</td></tr>
+            <tr><td>Immutable backups even root cannot delete</td><td>AWS Backup Vault Lock</td></tr>
+            <tr><td>On-premises NFS or SMB share backed by S3</td><td>S3 File Gateway</td></tr>
+            <tr><td>On-premises iSCSI block storage backed by S3</td><td>Volume Gateway</td></tr>
+            <tr><td>Replace physical tape backups</td><td>Tape Gateway</td></tr>
+            <tr><td>Migrate NFS or SMB data to AWS</td><td>AWS DataSync</td></tr>
+            <tr><td>Network transfer over one week</td><td>AWS Snow Family</td></tr>
+            <tr><td>Edge computing in disconnected environment</td><td>Snowball Edge Compute Optimized</td></tr>
+            <tr><td>Ongoing on-premises access to cloud storage</td><td>Storage Gateway</td></tr>
+            <tr><td>One-time or scheduled data migration</td><td>DataSync</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

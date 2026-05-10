@@ -10,6 +10,7 @@ Static HTML article site for AWS SAA-C03 study notes.
 - `iam-cheat-sheet.html`
 - `ec2-cheat-sheet.html`
 - `s3-cheat-sheet.html`
+- `storage-cheat-sheet.html`
 - `styles.css`
 - `script.js`
 
