@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS SQS SNS Cheat Sheet: Complete SAA-C03 Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(19px, 2.45vw, 27px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  ul {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 13px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+
+    li {
+      font-size: 11px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./iam-cheat-sheet.html">IAM Cheat Sheet</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./ec2-cheat-sheet.html">EC2 Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./s3-cheat-sheet.html">S3 Cheat Sheet</a>
+      <a class="navlink" href="./storage-cheat-sheet.html">Storage Cheat Sheet</a>
+      <a class="navlink" href="./sqs-sns-cheat-sheet.html" aria-current="page">SQS SNS Cheat Sheet</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS SQS &amp; SNS - Complete SAA-C03 Cheat Sheet</h1>
+        <p class="deck">A simple text reader version of the SQS and SNS cheat sheet, covering queueing, pub/sub, DLQs, FIFO, fan-out, filtering, and common exam architectures.</p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>1. Messaging Overview - Why Decouple?</h2>
+        <ul>
+          <li>Tightly coupled systems fail and scale together. Loosely coupled systems decouple producers and consumers with queues or topics.</li>
+          <li><strong>Queue model (SQS):</strong> One producer sends a message, one consumer processes it. Best for work distribution and task processing.</li>
+          <li><strong>Pub/Sub model (SNS):</strong> One publisher sends a message, many subscribers each receive a copy. Best for notifications and event broadcasting.</li>
+          <li><strong>Common architecture:</strong> SNS plus SQS fan-out. Producer sends once to SNS and multiple SQS queues receive copies.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>2. Amazon SQS - Fundamentals</h2>
+        <ul>
+          <li>Fully managed serverless message queuing service with automatic scaling.</li>
+          <li><strong>Unlimited throughput:</strong> No limit on messages per second or messages in a queue.</li>
+          <li><strong>Retention:</strong> Default four days, configurable from one minute to 14 days.</li>
+          <li><strong>Message size:</strong> Up to 256 KB. Use the Extended Client Library with S3 for larger payloads.</li>
+          <li><strong>Standard queue behavior:</strong> At-least-once delivery and best-effort ordering.</li>
+          <li>Messages are stored durably across multiple AZs.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>3. SQS - Producing &amp; Consuming Messages</h2>
+        <ul>
+          <li>Producers send messages with the <code>SendMessage</code> API, optionally including attributes.</li>
+          <li>Consumers poll, receive, process, and explicitly delete messages.</li>
+          <li><strong>Short Polling:</strong> Returns immediately, can waste calls with empty responses.</li>
+          <li><strong>Long Polling:</strong> Waits up to 20 seconds and is preferred because it reduces empty responses and cost.</li>
+          <li><strong>Batch operations:</strong> Send, receive, or delete up to 10 messages per API call.</li>
+          <li>Scale out consumers horizontally to process more messages in parallel.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>4. SQS - Visibility Timeout</h2>
+        <ul>
+          <li>After a consumer receives a message, it becomes invisible to other consumers for the visibility timeout period.</li>
+          <li><strong>Default:</strong> 30 seconds. Configurable from 0 seconds to 12 hours.</li>
+          <li>If the consumer deletes the message before timeout, processing succeeds and the message is removed.</li>
+          <li>If the consumer fails or takes too long, the message becomes visible again for retry.</li>
+          <li><strong>ChangeMessageVisibility:</strong> Extend the timeout for long-running tasks.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>5. SQS - Dead Letter Queue (DLQ)</h2>
+        <ul>
+          <li>A separate queue for messages that fail processing too many times.</li>
+          <li><strong>MaxReceiveCount:</strong> Number of failed receives before the message moves to the DLQ.</li>
+          <li>DLQ must be the same queue type as the source queue.</li>
+          <li>Use for debugging, isolating bad messages, and alerting on failures.</li>
+          <li><strong>DLQ Redrive:</strong> Move messages back for reprocessing after fixing the issue.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>6. SQS - Delay Queues &amp; Message Timers</h2>
+        <ul>
+          <li><strong>Delay Queue:</strong> Queue-level delay before messages first become visible, up to 15 minutes.</li>
+          <li><strong>Message Timer:</strong> Per-message delay, also up to 15 minutes, not available on FIFO queues.</li>
+          <li>Use for delayed processing, cooldowns, and throttling downstream systems.</li>
+          <li><strong>Exam distinction:</strong> Delay queue is before first delivery. Visibility timeout is after delivery.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>7. SQS - FIFO Queue</h2>
+        <ul>
+          <li>Guarantees ordered processing and exactly-once delivery behavior.</li>
+          <li>Queue name must end with <code>.fifo</code>.</li>
+          <li><strong>Message Group ID:</strong> Defines the ordering lane. Same group means in-order one-at-a-time processing.</li>
+          <li><strong>Message Deduplication ID:</strong> Prevents duplicate sends within a five-minute window.</li>
+          <li>Supports up to 300 messages per second, or more with batching and High Throughput FIFO.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>8. SQS - Security</h2>
+        <ul>
+          <li>Encryption in transit uses HTTPS by default.</li>
+          <li>Encryption at rest can use SSE-KMS or SSE-SQS.</li>
+          <li><strong>IAM policies:</strong> Control API-level access.</li>
+          <li><strong>SQS Queue Policy:</strong> Resource-based policy used for cross-account access and for services like S3 or SNS sending to the queue.</li>
+          <li><strong>VPC Endpoint:</strong> Use an Interface VPC Endpoint for private subnet access without the internet.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>9. SQS - Scaling Consumers with ASG</h2>
+        <ul>
+          <li>Common pattern: SQS queue with EC2 consumers in an Auto Scaling Group.</li>
+          <li><strong>Scaling metric:</strong> <code>ApproximateNumberOfMessagesVisible</code>.</li>
+          <li>Use CloudWatch alarms and ASG scaling policies to add consumers when queue depth rises.</li>
+          <li>Custom metric such as messages per instance is useful for more precise scaling.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>10. SQS - Temporary Queues &amp; Request-Response Pattern</h2>
+        <ul>
+          <li>Temporary Queue Client enables lightweight request-response patterns with virtual queues.</li>
+          <li>Producer sends a request with a reply queue reference, consumer processes it, then sends the response back.</li>
+          <li>Useful for RPC-style communication over asynchronous SQS.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>11. Amazon SNS - Fundamentals</h2>
+        <ul>
+          <li>Fully managed serverless pub/sub messaging service.</li>
+          <li>A publisher sends a message to an SNS topic and all subscribers receive a copy.</li>
+          <li>Topics and subscriptions scale massively with soft account limits.</li>
+          <li>Message size is also capped at 256 KB, with Extended Client Library patterns available for larger payloads.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>12. SNS - Publishers &amp; Subscribers</h2>
+        <ul>
+          <li>Publishers include applications and many AWS services such as S3, CloudWatch, ASG, RDS, and CodePipeline.</li>
+          <li><strong>Subscribers:</strong> SQS, Lambda, HTTP/HTTPS, email, SMS, Kinesis Data Firehose, and mobile push notifications.</li>
+          <li><strong>Exam pattern:</strong> If the question says one message must notify multiple systems, think SNS topic.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>13. SNS - Fan-Out Pattern (SNS + SQS)</h2>
+        <ul>
+          <li>One SNS topic fans out one published message to multiple SQS queues.</li>
+          <li>This decouples the producer from the consumers and lets you add new subscribers without changing producer code.</li>
+          <li>Cross-Region SQS subscriptions are supported.</li>
+          <li>Queue policies must allow the SNS topic to send messages.</li>
+          <li>Common use case: one event triggers multiple independent processing pipelines.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>14. SNS - Message Filtering</h2>
+        <ul>
+          <li>By default, every subscriber receives every message. Filter policies let each subscription receive only relevant messages.</li>
+          <li>Filters can use message attributes or the message body.</li>
+          <li>Supports exact match, prefix, numeric conditions, exists, and combined logic.</li>
+          <li>Use when different consumers need different subsets from the same topic.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>15. SNS - FIFO Topics</h2>
+        <ul>
+          <li>Guarantees strict ordering and exactly-once delivery semantics for FIFO subscribers.</li>
+          <li>Topic name must end with <code>.fifo</code>.</li>
+          <li>Only SQS FIFO queues can subscribe to an SNS FIFO topic.</li>
+          <li>Uses Message Group ID and Deduplication ID concepts similar to SQS FIFO.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>16. SNS - Security</h2>
+        <ul>
+          <li>HTTPS is used for encryption in transit.</li>
+          <li>SSE-KMS encrypts messages at rest.</li>
+          <li><strong>IAM policies:</strong> Control who can publish or subscribe.</li>
+          <li><strong>SNS Topic Policy:</strong> Resource-based policy for cross-account or service publishing and subscribing.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>17. SNS - Message Delivery &amp; Retry</h2>
+        <ul>
+          <li>SNS retries SQS and Lambda deliveries immediately, then with exponential backoff for up to 23 days.</li>
+          <li>HTTP/HTTPS retry behavior is configurable.</li>
+          <li>DLQs can be configured for subscriptions to capture undeliverable messages.</li>
+          <li>Without a DLQ, failed messages are dropped after retries are exhausted.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>18. SNS vs SQS - Comparison</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>SQS</th>
+              <th>SNS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Model</td><td>Queue (pull)</td><td>Pub/Sub (push)</td></tr>
+            <tr><td>Delivery</td><td>One consumer per message</td><td>All subscribers receive each message</td></tr>
+            <tr><td>Persistence</td><td>Retained until processed or expired</td><td>No retention beyond delivery and retries</td></tr>
+            <tr><td>Use case</td><td>Task distribution and buffering</td><td>Notifications and fan-out</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>19. SQS + SNS + Lambda - Common Architectures</h2>
+        <ul>
+          <li>Fan-out processing: one event to multiple queues and Lambda subscribers.</li>
+          <li>Decoupled microservices: API producer to SQS, then Lambda or EC2 consumers.</li>
+          <li>Buffered writes: SQS between incoming traffic and DynamoDB writes.</li>
+          <li>Cross-account messaging using topic policies and queue policies.</li>
+          <li>Ordered fan-out using SNS FIFO topics and SQS FIFO queues.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>20. Amazon EventBridge (vs SNS)</h2>
+        <ul>
+          <li>EventBridge supports advanced filtering, schema registry, archive and replay, SaaS integrations, and multiple event buses.</li>
+          <li>SNS is better for simple high-volume fan-out plus SMS, email, and push notifications.</li>
+          <li><strong>Exam decision:</strong> Simple fan-out means SNS. Complex routing or replay means EventBridge.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>21. Amazon MQ</h2>
+        <ul>
+          <li>Managed broker for ActiveMQ and RabbitMQ using standard messaging protocols.</li>
+          <li>Not serverless. Runs on provisioned infrastructure.</li>
+          <li>Use for migrating existing on-prem messaging apps without rewriting them.</li>
+          <li>For new cloud-native architectures, prefer SQS plus SNS.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>22. Kinesis vs SQS - When to Choose Which</h2>
+        <ul>
+          <li><strong>Kinesis Data Streams:</strong> Real-time streaming with ordered data per shard, multiple consumers, and replay.</li>
+          <li><strong>SQS:</strong> One-time message consumption for decoupling and buffering.</li>
+          <li>Use Kinesis for streaming analytics and multiple readers. Use SQS for asynchronous task distribution.</li>
+        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Kinesis Data Streams</th>
+              <th>SQS Standard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Model</td><td>Stream</td><td>Queue</td></tr>
+            <tr><td>Ordering</td><td>Per shard</td><td>Best-effort</td></tr>
+            <tr><td>Replay</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Multiple consumers</td><td>Yes</td><td>No</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick Decision Matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Decouple two services, process tasks asynchronously</td><td>SQS Standard queue</td></tr>
+            <tr><td>Messages must be processed in order</td><td>SQS FIFO queue</td></tr>
+            <tr><td>Send one message to many consumers</td><td>SNS topic</td></tr>
+            <tr><td>Fan-out with strict ordering</td><td>SNS FIFO topic to SQS FIFO queues</td></tr>
+            <tr><td>Route different messages to different consumers</td><td>SNS Message Filtering</td></tr>
+            <tr><td>Messages keep failing, need to isolate them</td><td>SQS Dead Letter Queue</td></tr>
+            <tr><td>Reprocess failed messages later</td><td>DLQ Redrive</td></tr>
+            <tr><td>Delay message delivery by five minutes</td><td>SQS Delay Queue</td></tr>
+            <tr><td>Messages processed twice</td><td>Increase Visibility Timeout or use FIFO</td></tr>
+            <tr><td>Consumer cannot finish in 30 seconds</td><td>Increase Visibility Timeout or call ChangeMessageVisibility</td></tr>
+            <tr><td>Scale consumers based on queue depth</td><td>ASG scaling on ApproximateNumberOfMessagesVisible</td></tr>
+            <tr><td>S3 event to multiple destinations</td><td>S3 to SNS to multiple SQS queues, or S3 to EventBridge</td></tr>
+            <tr><td>S3 or CloudWatch publish to SNS fails</td><td>Check SNS Topic Policy</td></tr>
+            <tr><td>S3 or SNS send to SQS fails</td><td>Check SQS Queue Policy</td></tr>
+            <tr><td>Cross-account messaging</td><td>Topic and queue policies allowing the other account</td></tr>
+            <tr><td>Message payload larger than 256 KB</td><td>Extended Client Library with S3</td></tr>
+            <tr><td>Complex routing, archive, replay</td><td>Amazon EventBridge</td></tr>
+            <tr><td>SMS, email, mobile push</td><td>SNS</td></tr>
+            <tr><td>Migrate ActiveMQ or RabbitMQ with minimal changes</td><td>Amazon MQ</td></tr>
+            <tr><td>Build new cloud-native messaging</td><td>SQS plus SNS</td></tr>
+            <tr><td>Real-time streaming analytics, multiple readers</td><td>Kinesis Data Streams</td></tr>
+            <tr><td>Decouple and buffer writes to DynamoDB</td><td>API Gateway to SQS to Lambda to DynamoDB</td></tr>
+            <tr><td>Reduce empty SQS API responses</td><td>Enable Long Polling</td></tr>
+            <tr><td>Web tier decoupled from processing tier with auto-scale</td><td>Web tier to SQS to ASG consumers</td></tr>
+            <tr><td>Encrypt messages at rest with audit trail</td><td>SSE-KMS on SQS or SNS</td></tr>
+            <tr><td>Access SQS from private subnet</td><td>Interface VPC Endpoint (PrivateLink)</td></tr>
+            <tr><td>Notify multiple teams when deployment completes</td><td>CodePipeline to SNS topic</td></tr>
+            <tr><td>Absorb traffic spikes before database writes</td><td>SQS as a buffer between producers and DB consumers</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
