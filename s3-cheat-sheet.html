@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS S3 Cheat Sheet: Complete SAA-C03 Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(19px, 2.45vw, 27px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  ul {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 13px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+
+    li {
+      font-size: 11px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./iam-cheat-sheet.html">IAM Cheat Sheet</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./ec2-cheat-sheet.html">EC2 Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./s3-cheat-sheet.html" aria-current="page">S3 Cheat Sheet</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS S3 - Complete SAA-C03 Cheat Sheet</h1>
+        <p class="deck">A simple text reader version of the full S3 cheat sheet, preserving the original section structure and decision matrix.</p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>1. S3 Fundamentals</h2>
+        <ul>
+          <li>S3 (Simple Storage Service) is object storage, not block storage or file storage. Buckets are created in a specific Region even though the service has a global console.</li>
+          <li><strong>Object:</strong> A file plus metadata. Each object has a key, a value up to 5 TB, a version ID, metadata, and tags.</li>
+          <li><strong>Bucket:</strong> A container for objects. Bucket names are globally unique across all AWS accounts and must follow naming constraints.</li>
+          <li>There is no limit on the number of objects in a bucket. Buckets per account default to 100 and can be increased.</li>
+          <li>S3 is designed for 11 nines of durability. Standard data is replicated across at least three AZs.</li>
+          <li><strong>Consistency model:</strong> Strong read-after-write consistency for PUT and DELETE.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>2. S3 Storage Classes</h2>
+        <ul>
+          <li><strong>S3 Standard:</strong> Frequently accessed data with no retrieval fee.</li>
+          <li><strong>S3 Intelligent-Tiering:</strong> Automatically moves objects between tiers based on access patterns for unpredictable workloads.</li>
+          <li><strong>S3 Standard-IA:</strong> Lower storage cost with retrieval fee for infrequently accessed data needing millisecond retrieval.</li>
+          <li><strong>S3 One Zone-IA:</strong> Cheaper than Standard-IA but stored in a single AZ.</li>
+          <li><strong>S3 Glacier Instant Retrieval:</strong> Archive storage with millisecond retrieval.</li>
+          <li><strong>S3 Glacier Flexible Retrieval:</strong> Archive storage with retrieval in minutes to hours.</li>
+          <li><strong>S3 Glacier Deep Archive:</strong> Cheapest archive option with retrieval in 12 to 48 hours.</li>
+          <li><strong>Key exam comparison:</strong> Unknown access patterns means Intelligent-Tiering. Cheapest long-term archive means Glacier Deep Archive.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>3. S3 Lifecycle Rules</h2>
+        <ul>
+          <li>Lifecycle rules automate transitions between storage classes and expiration of objects.</li>
+          <li><strong>Transition Actions:</strong> Move objects to cheaper storage classes after a number of days.</li>
+          <li><strong>Expiration Actions:</strong> Delete objects, delete expired delete markers, or delete incomplete multipart uploads.</li>
+          <li>Rules can apply to entire buckets, prefixes, tags, or combinations.</li>
+          <li><strong>Transition constraints:</strong> You can only transition downward in the storage hierarchy.</li>
+          <li><strong>S3 Analytics:</strong> Recommends Standard to Standard-IA transitions based on access patterns.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>4. S3 Versioning</h2>
+        <ul>
+          <li>Versioning keeps multiple versions of an object in the same bucket. Once enabled, it can only be suspended, not disabled.</li>
+          <li>Every overwrite or delete creates a new version. Old versions remain billable.</li>
+          <li><strong>Deleting a versioned object:</strong> A delete request adds a delete marker. To permanently delete, delete the specific version ID.</li>
+          <li><strong>MFA Delete:</strong> Requires MFA to permanently delete a version or change versioning state. Only root can enable it via CLI.</li>
+          <li>Versioning is required for S3 Replication.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>5. S3 Replication</h2>
+        <ul>
+          <li><strong>Cross-Region Replication (CRR):</strong> Replicates to a bucket in another Region for DR, compliance, or low-latency access.</li>
+          <li><strong>Same-Region Replication (SRR):</strong> Replicates to another bucket in the same Region.</li>
+          <li><strong>Requirements:</strong> Versioning on source and destination plus proper IAM permissions.</li>
+          <li>Only new objects replicate by default after replication is enabled. Existing objects need S3 Batch Replication.</li>
+          <li><strong>Replication Time Control (RTC):</strong> SLA-backed replication within 15 minutes for extra cost.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>6. S3 Security - Bucket Policies</h2>
+        <ul>
+          <li><strong>Bucket Policy:</strong> Resource-based JSON policy controlling bucket access and conditions.</li>
+          <li><strong>ACLs:</strong> Legacy access control. AWS recommends disabling them with Object Ownership set to bucket owner enforced.</li>
+          <li><strong>Block Public Access:</strong> Account-level or bucket-level settings that override policies and ACLs to prevent public access.</li>
+          <li><strong>Exam pattern:</strong> To ensure no bucket in an account can ever be public, enable Block Public Access at the account level.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>7. S3 Security - Encryption</h2>
+        <ul>
+          <li><strong>SSE-S3:</strong> AWS-managed keys, default on new objects, no extra configuration.</li>
+          <li><strong>SSE-KMS:</strong> Uses KMS keys and allows auditing through CloudTrail, but can hit KMS API limits.</li>
+          <li><strong>SSE-C:</strong> You provide the key with every request. AWS does not store it.</li>
+          <li><strong>DSSE-KMS:</strong> Dual-layer encryption using KMS for highly regulated workloads.</li>
+          <li><strong>Client-Side Encryption:</strong> Data is encrypted before upload and S3 stores ciphertext only.</li>
+          <li><strong>Encryption in transit:</strong> Enforce HTTPS with a bucket policy condition on <code>aws:SecureTransport</code>.</li>
+          <li><strong>Default encryption:</strong> Buckets can enforce a default encryption method.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>8. S3 Security - Access Control Deep Dive</h2>
+        <ul>
+          <li><strong>IAM Policy:</strong> Identity-based control for users, roles, or groups.</li>
+          <li><strong>Bucket Policy:</strong> Resource-based control, required for cross-account access and condition enforcement.</li>
+          <li><strong>Evaluation logic:</strong> IAM and bucket policies combine, unless either contains an explicit deny.</li>
+          <li><strong>VPC Endpoint policy:</strong> Restricts which buckets or actions are allowed through a Gateway VPC Endpoint.</li>
+          <li><strong>Access Points:</strong> Simplify access management for shared datasets with per-access-point policies.</li>
+          <li><strong>Object Lambda Access Point:</strong> Transforms data on the fly using Lambda before returning it.</li>
+          <li><strong>Pre-Signed URLs:</strong> Temporary URLs for time-limited access to upload or download a specific object.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>9. S3 Performance Optimization</h2>
+        <ul>
+          <li>Baseline performance supports 3,500 write-type requests and 5,500 read-type requests per second per prefix.</li>
+          <li><strong>Multipart Upload:</strong> Required for objects larger than 5 GB and recommended for objects larger than 100 MB.</li>
+          <li><strong>S3 Transfer Acceleration:</strong> Uses CloudFront edge locations to speed up long-distance uploads.</li>
+          <li><strong>S3 Byte-Range Fetches:</strong> Parallelize downloads or fetch only parts of large objects.</li>
+          <li><strong>S3 Select / Glacier Select:</strong> Query subsets of data inside objects using SQL.</li>
+          <li><strong>Prefix design:</strong> Spread reads and writes across multiple prefixes for parallelism.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>10. S3 Event Notifications</h2>
+        <ul>
+          <li>S3 can trigger notifications when objects are created, deleted, or restored.</li>
+          <li><strong>Destinations:</strong> SNS, SQS, Lambda, and EventBridge.</li>
+          <li><strong>Exam pattern:</strong> Process images on upload means S3 event notification to Lambda. Complex routing usually means EventBridge.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>11. S3 Object Lock &amp; Glacier Vault Lock (WORM)</h2>
+        <ul>
+          <li><strong>S3 Object Lock:</strong> Prevents objects from being deleted or overwritten for a retention period. Requires versioning.</li>
+          <li><strong>Governance Mode:</strong> Most users cannot delete, but privileged users can bypass in emergencies.</li>
+          <li><strong>Compliance Mode:</strong> Nobody can delete or shorten retention, not even root.</li>
+          <li><strong>Legal Hold:</strong> Indefinite hold that must be explicitly removed.</li>
+          <li><strong>Glacier Vault Lock:</strong> Immutable Vault Lock policy for Glacier vault compliance archives.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>12. S3 Static Website Hosting</h2>
+        <ul>
+          <li>S3 can host static websites directly with a website endpoint URL.</li>
+          <li>You must enable static website hosting and specify an index document.</li>
+          <li>Objects must be publicly readable, which means allowing <code>s3:GetObject</code> and disabling Block Public Access for the site bucket.</li>
+          <li><strong>S3 + CloudFront:</strong> Common pattern for HTTPS, custom domains, global caching, and private bucket access using OAC.</li>
+          <li><strong>CORS:</strong> Required when a site on one origin needs resources from another origin.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>13. S3 Access Logs &amp; Monitoring</h2>
+        <ul>
+          <li><strong>S3 Server Access Logging:</strong> Logs all requests to a bucket and writes them to another bucket in the same Region.</li>
+          <li><strong>CloudTrail Data Events:</strong> Object-level API logging for GetObject, PutObject, and DeleteObject. Not enabled by default.</li>
+          <li><strong>S3 Storage Lens:</strong> Organization-wide visibility into storage usage and activity trends.</li>
+          <li><strong>S3 Inventory:</strong> Daily or weekly inventory reports listing objects and metadata for auditing and analysis.</li>
+          <li><strong>Exam trap:</strong> Never set the logging target bucket equal to the source bucket.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>14. S3 Batch Operations</h2>
+        <ul>
+          <li>Perform bulk operations on billions of objects with a single request.</li>
+          <li>Operations include copying objects, invoking Lambda, restoring from Glacier, replacing tags, changing storage class, and encrypting objects.</li>
+          <li>Uses S3 Inventory or a custom CSV as the source list.</li>
+          <li>Supports retries, progress tracking, notifications, and completion reports.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>15. S3 with Other AWS Services - Common Architectures</h2>
+        <ul>
+          <li><strong>CloudFront + S3:</strong> Content distribution with OAC to restrict direct S3 access.</li>
+          <li><strong>S3 + Athena:</strong> Query data in S3 using SQL without loading it into a database.</li>
+          <li><strong>S3 + Macie:</strong> Discover and classify sensitive data in S3.</li>
+          <li><strong>S3 + EventBridge + Lambda:</strong> Event-driven processing pipeline.</li>
+          <li><strong>S3 + Glacier + Lifecycle Rules:</strong> Automated archival pipeline.</li>
+          <li><strong>S3 as a data lake:</strong> Central repository for structured, semi-structured, and unstructured data.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>16. S3 Requester Pays</h2>
+        <ul>
+          <li>With Requester Pays, the requester pays request and data transfer costs while the owner still pays for storage.</li>
+          <li>The requester must be an authenticated AWS user.</li>
+          <li>Useful for sharing large datasets without paying the download bill yourself.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>17. S3 Multipart Upload &amp; Limits</h2>
+        <ul>
+          <li><strong>Object size limits:</strong> Single PUT max 5 GB. Multipart upload max 5 TB. Each part 5 MB to 5 GB. Maximum 10,000 parts.</li>
+          <li>Multipart upload is recommended for objects larger than 100 MB and required above 5 GB.</li>
+          <li>Incomplete multipart uploads continue to consume storage until aborted or cleaned up by lifecycle rules.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>18. S3 Presigned URLs vs CloudFront Signed URLs</h2>
+        <ul>
+          <li><strong>S3 Presigned URL:</strong> Temporary access to a specific S3 object using IAM principal credentials.</li>
+          <li><strong>CloudFront Signed URL:</strong> Temporary access to a specific file through CloudFront with CDN delivery and access control.</li>
+          <li><strong>CloudFront Signed Cookies:</strong> Temporary access to multiple files via CloudFront.</li>
+          <li><strong>Exam decision:</strong> Single object direct from S3 means presigned URL. Multiple CDN files means signed cookies.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>19. S3 Cross-Account Access Patterns</h2>
+        <ul>
+          <li><strong>Bucket Policy:</strong> Simplest cross-account method for S3 access.</li>
+          <li><strong>Cross-Account IAM Role:</strong> Other account assumes a role with S3 permissions.</li>
+          <li><strong>ACLs:</strong> Legacy and not recommended.</li>
+          <li><strong>Access Points:</strong> Cleaner cross-account access management than editing one large bucket policy.</li>
+          <li><strong>Exam preference:</strong> Bucket policy is usually the simplest and most common answer.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>20. S3 Transfer &amp; Migration</h2>
+        <ul>
+          <li><strong>S3 Transfer Acceleration:</strong> Ongoing accelerated uploads over the internet using edge locations.</li>
+          <li><strong>AWS DataSync:</strong> Automated online transfer between on-premises, other clouds, and AWS storage services.</li>
+          <li><strong>AWS Snow Family:</strong> Offline transfer for large migrations, from Snowcone up to Snowmobile.</li>
+          <li><strong>Rule of thumb:</strong> If network transfer would take more than a week, use Snow Family.</li>
+          <li><strong>AWS Storage Gateway:</strong> Hybrid storage service connecting on-premises systems with S3 and related storage options.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick Decision Matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Frequently accessed data, general purpose</td><td>S3 Standard</td></tr>
+            <tr><td>Unknown or changing access patterns</td><td>S3 Intelligent-Tiering</td></tr>
+            <tr><td>Backups accessed less than once a month</td><td>S3 Standard-IA</td></tr>
+            <tr><td>Secondary backups, data can be recreated</td><td>S3 One Zone-IA</td></tr>
+            <tr><td>Archive, need instant retrieval</td><td>Glacier Instant Retrieval</td></tr>
+            <tr><td>Archive, can wait 3 to 5 hours</td><td>Glacier Flexible Retrieval</td></tr>
+            <tr><td>Compliance archive, 7+ year retention</td><td>Glacier Deep Archive</td></tr>
+            <tr><td>Prevent accidental deletion</td><td>Versioning plus MFA Delete</td></tr>
+            <tr><td>Regulatory: nobody can delete for 7 years</td><td>S3 Object Lock in Compliance Mode</td></tr>
+            <tr><td>Legal evidence preservation</td><td>S3 Object Lock Legal Hold</td></tr>
+            <tr><td>Immutable Glacier archive policy</td><td>Glacier Vault Lock</td></tr>
+            <tr><td>Transition data to cheaper tiers automatically</td><td>S3 Lifecycle Rules</td></tr>
+            <tr><td>Replicate to another Region for DR</td><td>Cross-Region Replication (CRR)</td></tr>
+            <tr><td>Aggregate logs from multiple buckets in same Region</td><td>Same-Region Replication (SRR)</td></tr>
+            <tr><td>Replicate existing objects</td><td>S3 Batch Replication</td></tr>
+            <tr><td>Enforce encryption with customer-controlled keys</td><td>SSE-KMS plus bucket policy denying unencrypted uploads</td></tr>
+            <tr><td>Audit who accessed encryption keys</td><td>SSE-KMS with CloudTrail logs</td></tr>
+            <tr><td>High-throughput hitting KMS throttle</td><td>SSE-S3 or increase KMS quota</td></tr>
+            <tr><td>Customer must manage their own key entirely</td><td>SSE-C or client-side encryption</td></tr>
+            <tr><td>Enforce HTTPS only</td><td>Bucket policy deny if <code>aws:SecureTransport = false</code></td></tr>
+            <tr><td>Ensure no bucket is ever public</td><td>Block Public Access at account level</td></tr>
+            <tr><td>Simplify access for multiple teams or apps</td><td>S3 Access Points</td></tr>
+            <tr><td>Transform data on read without copies</td><td>Object Lambda Access Point</td></tr>
+            <tr><td>Temporary download link for a private object</td><td>S3 Presigned URL</td></tr>
+            <tr><td>Distribute private content globally</td><td>CloudFront Signed URL or Signed Cookies plus OAC</td></tr>
+            <tr><td>Upload large files greater than 100 MB fast</td><td>Multipart Upload</td></tr>
+            <tr><td>Accelerate cross-continent uploads</td><td>S3 Transfer Acceleration</td></tr>
+            <tr><td>Query CSV or JSON data in S3 with SQL</td><td>Athena or S3 Select</td></tr>
+            <tr><td>Discover PII in S3 buckets</td><td>Amazon Macie</td></tr>
+            <tr><td>Encrypt all existing unencrypted objects</td><td>S3 Inventory then S3 Batch Operations</td></tr>
+            <tr><td>Process images on upload</td><td>S3 Event Notification to Lambda</td></tr>
+            <tr><td>Complex event routing from S3</td><td>S3 to EventBridge</td></tr>
+            <tr><td>Migrate terabytes from on-premises</td><td>DataSync online or Snowball offline if over one week</td></tr>
+            <tr><td>On-premises file share backed by S3</td><td>S3 File Gateway</td></tr>
+            <tr><td>Replace tape backup with cloud</td><td>Tape Gateway</td></tr>
+            <tr><td>Static website with HTTPS and custom domain</td><td>S3 plus CloudFront plus ACM certificate</td></tr>
+            <tr><td>Access-Control-Allow-Origin error</td><td>Configure CORS on the resource bucket</td></tr>
+            <tr><td>Share large datasets, requester pays transfer</td><td>S3 Requester Pays</td></tr>
+            <tr><td>Find cost optimization across all buckets</td><td>S3 Storage Lens</td></tr>
+            <tr><td>Audit all objects and their encryption status</td><td>S3 Inventory</td></tr>
+            <tr><td>Prevent infinite logging loop</td><td>Never set logging target equal to source bucket</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

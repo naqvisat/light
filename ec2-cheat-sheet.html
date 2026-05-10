@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EC2 Cheat Sheet: Complete SAA-C03 Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg: #f7f4ee;
+    --paper: #fffdf8;
+    --border: #ddd4c5;
+    --text: #222018;
+    --text-dim: #5f594d;
+    --text-faint: #857d70;
+    --accent: #8d5c00;
+    --accent-soft: rgba(141, 92, 0, 0.08);
+    --shadow: 0 20px 50px rgba(44, 35, 19, 0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Charter, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.75;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)),
+      radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 30%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 72px;
+  }
+
+  .topnav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 253, 248, 0.82);
+    color: var(--text-dim);
+    text-decoration: none;
+    font: 700 12px/1.2 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  }
+
+  .navlink:hover {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--text);
+  }
+
+  .navlink[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: #cfbea0;
+    color: var(--accent);
+  }
+
+  .article {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 48px 56px;
+  }
+
+  header {
+    margin-bottom: 32px;
+  }
+
+  h1 {
+    font-size: clamp(19px, 2.45vw, 27px);
+    line-height: 1.05;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .deck {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 1.15;
+    margin: 56px 0 16px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 18px;
+  }
+
+  ul {
+    margin: 0 0 22px 22px;
+    padding: 0;
+  }
+
+  li {
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+  }
+
+  strong { color: var(--text); }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    background: #f2ede3;
+    border: 1px solid #e2d9c9;
+    border-radius: 4px;
+    padding: 0.12em 0.35em;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    margin: 40px 0;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 22px 0 28px;
+    font-size: 12px;
+  }
+
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font: 700 12px/1.3 "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  td {
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .page {
+      padding-top: 24px;
+    }
+
+    .topnav {
+      margin-bottom: 14px;
+    }
+
+    .navlink {
+      font-size: 11px;
+      padding: 7px 12px;
+    }
+
+    .article {
+      padding: 28px 18px;
+      border-radius: 16px;
+    }
+
+    .deck {
+      font-size: 13px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+
+    li {
+      font-size: 11px;
+    }
+
+    h2 {
+      font-size: 17px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+      padding: 10px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topnav" aria-label="Site sections">
+      <a class="navlink" href="./index.html">IAM</a>
+      <a class="navlink" href="./iam-cheat-sheet.html">IAM Cheat Sheet</a>
+      <a class="navlink" href="./vpc.html">VPC</a>
+      <a class="navlink" href="./vpc-overview.html">VPC Overview</a>
+      <a class="navlink" href="./vpc-cheat-sheet.html">VPC Cheat Sheet</a>
+      <a class="navlink" href="./ec2-and-ebs.html">EC2 and EBS and ELB</a>
+      <a class="navlink" href="./ec2-cheat-sheet.html" aria-current="page">EC2 Cheat Sheet</a>
+      <a class="navlink" href="./s3.html">S3</a>
+      <a class="navlink" href="./s3-cheat-sheet.html">S3 Cheat Sheet</a>
+      <a class="navlink" href="./efs.html">EFS</a>
+      <a class="navlink" href="./dynamodb.html">DynamoDB</a>
+      <a class="navlink" href="./aurora-and-rds.html">Aurora and RDS</a>
+      <a class="navlink" href="./route-53.html">Route 53</a>
+    </nav>
+    <article class="article">
+      <header>
+        <h1>AWS EC2 - Complete SAA-C03 Cheat Sheet</h1>
+        <p class="deck">A simple text reader version of the full EC2 cheat sheet, preserving the original section structure and decision matrix.</p>
+      </header>
+
+      <hr>
+
+      <section>
+        <h2>1. EC2 Fundamentals</h2>
+        <ul>
+          <li>EC2 (Elastic Compute Cloud) provides resizable virtual servers (instances) in the cloud. It is a Regional service - you launch instances in a specific Region and AZ.</li>
+          <li>You choose: instance type (CPU, memory, network), AMI (operating system + software), storage (EBS, instance store), network (VPC, subnet, security group), and IAM role.</li>
+          <li>EC2 has a per-Region limit on the number of running instances (default varies by instance type). Request increases via Service Quotas.</li>
+          <li><strong>User Data:</strong> A script (bash or PowerShell) that runs once at instance first boot. Used for bootstrapping - installing software, pulling config, starting services. Runs as root. Not encrypted by default.</li>
+          <li><strong>Instance Metadata (IMDS):</strong> Available at <code>http://169.254.169.254/latest/meta-data/</code>. Instances can query their own metadata. IMDSv2 is recommended over IMDSv1 for security. You can enforce IMDSv2-only.</li>
+          <li><strong>MFA cannot be used with EC2 instance roles.</strong> MFA requires human interaction. <code>aws:MultiFactorAuthPresent</code> is always false for instance role credentials.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>2. Instance Types</h2>
+        <ul>
+          <li>Instance type naming convention: <strong>m5.xlarge</strong> - m = family, 5 = generation, xlarge = size.</li>
+          <li><strong>Key families for the exam:</strong>
+            <ul>
+              <li><strong>General Purpose (M, T):</strong> Balanced compute, memory, networking. T-series are burstable and good for variable workloads. M-series for steady-state general workloads.</li>
+              <li><strong>Compute Optimized (C):</strong> Best for batch processing, media transcoding, HPC, ML inference, gaming servers, scientific modeling.</li>
+              <li><strong>Memory Optimized (R, X, z):</strong> Best for in-memory databases, real-time analytics, and large in-memory caches.</li>
+              <li><strong>Storage Optimized (I, D, H):</strong> Best for data warehousing, distributed file systems, and high-frequency OLTP databases.</li>
+              <li><strong>Accelerated Computing (P, G, Inf, Trn):</strong> GPUs or custom chips for ML training, ML inference, and graphics workloads.</li>
+            </ul>
+          </li>
+          <li><strong>T-series burstable deep dive:</strong> T3/T3a instances earn CPU credits at a baseline rate. If you consistently burst above the baseline, credits deplete and performance drops to baseline. Enable <strong>Unlimited mode</strong> to burst beyond credits.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>3. AMI (Amazon Machine Image)</h2>
+        <ul>
+          <li>AMI is a template containing OS, application software, launch permissions, and EBS volume mappings. Required to launch an instance.</li>
+          <li>AMIs are <strong>Region-specific</strong>. To use an AMI in another Region, you must copy it to that Region.</li>
+          <li><strong>AMI types:</strong> AWS-provided, AWS Marketplace, Community, and Custom.</li>
+          <li><strong>Creating a custom AMI:</strong> Launch instance, configure it, then create an AMI. This creates EBS snapshots of all attached volumes.</li>
+          <li>AMIs can be shared with specific accounts, made public, or kept private. Encrypted AMIs shared cross-account require access to the KMS key.</li>
+          <li><strong>Golden AMI pattern:</strong> Pre-bake a fully configured AMI with patches, software, and config for fast, consistent deployments.</li>
+          <li><strong>AMI + EC2 Image Builder:</strong> Automates the creation, testing, and distribution of AMIs using pipelines.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>4. Purchasing Options</h2>
+        <ul>
+          <li><strong>On-Demand:</strong> Most flexible. Best for short-term and unpredictable workloads.</li>
+          <li><strong>Reserved Instances (RI):</strong> One-year or three-year commitment for steady-state workloads. Up to 72 percent discount versus On-Demand.</li>
+          <li><strong>Convertible Reserved Instances:</strong> More flexible than Standard RIs but with a smaller discount.</li>
+          <li><strong>Savings Plans:</strong> Commit to a dollar amount per hour. Compute Savings Plans are the most flexible. EC2 Instance Savings Plans are more restrictive but can discount more.</li>
+          <li><strong>Spot Instances:</strong> Up to 90 percent discount. AWS can reclaim them with two-minute notice. Best for fault-tolerant workloads.</li>
+          <li><strong>Spot Fleets:</strong> A collection of Spot Instances and optionally On-Demand that tries to meet target capacity.</li>
+          <li><strong>Spot Block:</strong> Deprecated but may appear on the exam.</li>
+          <li><strong>Dedicated Host:</strong> Entire physical server dedicated to you. Required for server-bound software licenses.</li>
+          <li><strong>Dedicated Instance:</strong> Hardware dedicated to your account, but without physical host control.</li>
+          <li><strong>Capacity Reservations:</strong> Reserve On-Demand capacity in a specific AZ without billing discounts.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>5. EC2 Placement Groups</h2>
+        <ul>
+          <li><strong>Cluster:</strong> Instances packed close together in the same AZ. Lowest latency and highest throughput. Best for HPC and low-latency applications.</li>
+          <li><strong>Spread:</strong> Each instance on different physical hardware. Maximum seven instances per AZ per group. Best for critical applications that need isolated failure domains.</li>
+          <li><strong>Partition:</strong> Instances divided into logical partitions on separate racks. Best for large distributed workloads like Hadoop, HBase, Cassandra, and Kafka.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>6. Elastic Network Interfaces (ENI)</h2>
+        <ul>
+          <li>ENI is a virtual network card attached to an instance. Each instance has a primary ENI that cannot be detached.</li>
+          <li>You can attach secondary ENIs for multi-homed instances, failover, and low-budget high availability solutions.</li>
+          <li>ENIs are AZ-specific - you cannot attach an ENI from one AZ to an instance in another AZ.</li>
+          <li>Each ENI has a primary private IPv4, optional secondary private IPv4s, Elastic IPs, IPv6 addresses, security groups, a MAC address, and a source or destination check flag.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>7. Elastic IP</h2>
+        <ul>
+          <li>Static public IPv4 address. You own it until you release it.</li>
+          <li>You are charged if the Elastic IP is not associated with a running instance.</li>
+          <li>Limited to five per Region by default.</li>
+          <li>Can be moved between instances in the same Region for failover, though AWS recommends load balancers or DNS instead for high availability.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>8. EC2 Storage - EBS (Elastic Block Store)</h2>
+        <ul>
+          <li>EBS volumes are network-attached block storage. They persist independently of the instance. They are AZ-specific.</li>
+          <li><strong>EBS volume types:</strong>
+            <ul>
+              <li><strong>gp3:</strong> Cost-effective default SSD choice with independently scalable IOPS and throughput.</li>
+              <li><strong>gp2:</strong> Older general purpose SSD where IOPS scales with volume size.</li>
+              <li><strong>io2 or io2 Block Express:</strong> Highest performance SSD for critical databases and sustained IOPS workloads.</li>
+              <li><strong>io1:</strong> Older provisioned IOPS generation being replaced by io2.</li>
+              <li><strong>st1:</strong> Throughput optimized HDD for big data and sequential workloads.</li>
+              <li><strong>sc1:</strong> Cold HDD for infrequently accessed data at the lowest cost.</li>
+            </ul>
+          </li>
+          <li><strong>EBS Multi-Attach (io1/io2 only):</strong> Attach one EBS volume to up to 16 Nitro-based instances in the same AZ.</li>
+          <li><strong>EBS Encryption:</strong> Uses KMS keys and encrypts both at rest and in transit between instance and volume.</li>
+          <li><strong>Delete on Termination:</strong> Root volumes default to delete. Additional volumes default not to delete.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>9. EBS Snapshots</h2>
+        <ul>
+          <li>Snapshots are point-in-time backups of EBS volumes stored in S3 and are incremental after the first snapshot.</li>
+          <li>Snapshots are Region-specific but can be copied cross-Region and cross-account.</li>
+          <li>You can create a volume from a snapshot in any AZ within the Region. This is how you move an EBS volume to another AZ.</li>
+          <li><strong>EBS Snapshot Archive:</strong> Cheaper archive tier with retrieval taking 24 to 72 hours.</li>
+          <li><strong>Recycle Bin for EBS Snapshots:</strong> Protects against accidental deletion with configurable retention.</li>
+          <li><strong>Fast Snapshot Restore (FSR):</strong> Eliminates first-access latency for volumes created from snapshots.</li>
+          <li>Best practice: for strong data consistency, stop the instance or freeze the filesystem before snapshotting.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>10. Instance Store (Ephemeral Storage)</h2>
+        <ul>
+          <li>Physically attached disk on the host machine with extremely high IOPS. Included in the instance cost.</li>
+          <li><strong>Data is lost when:</strong> the instance is stopped, terminated, or the underlying hardware fails. Data survives a reboot.</li>
+          <li>Cannot be detached or reattached. Size and type are fixed by the instance type.</li>
+          <li>Best for buffer, cache, scratch data, and temporary content. Not for databases or persistent data.</li>
+          <li><strong>Exam trap:</strong> highest possible IOPS means Instance Store. Data that must persist means EBS.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>11. EFS (Elastic File System)</h2>
+        <ul>
+          <li>Managed NFS file system. Multi-AZ and can be mounted by hundreds of Linux instances across AZs simultaneously.</li>
+          <li><strong>Use cases:</strong> Content management, web serving, shared home directories, and big data analytics requiring shared file storage.</li>
+          <li>Scales automatically as you add or remove files and can grow to petabytes.</li>
+          <li><strong>Performance modes:</strong> General Purpose for low latency and Max I/O for higher throughput with slightly higher latency.</li>
+          <li><strong>Throughput modes:</strong> Bursting and Provisioned (Elastic).</li>
+          <li><strong>Storage Classes:</strong> Standard, Infrequent Access, One Zone, and Archive.</li>
+          <li><strong>EFS vs EBS vs Instance Store:</strong> EFS is shared and multi-AZ, EBS is single-AZ block storage, Instance Store is ephemeral with highest IOPS.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>12. EC2 Hibernate</h2>
+        <ul>
+          <li>When you hibernate an instance, RAM contents are saved to the root EBS volume and restored on restart.</li>
+          <li>Requirements: EBS root volume, encryption, and enough root volume space to hold the RAM dump. Supported on On-Demand, Reserved, and Spot Instances.</li>
+          <li>RAM size limit: up to 150 GB.</li>
+          <li>Maximum hibernation duration: 60 days.</li>
+          <li><strong>Use cases:</strong> Long-running processing tasks, services with long initialization times, and preserving application state.</li>
+          <li>Exam pattern: resume an instance exactly where it left off or preserve RAM state means EC2 Hibernate.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>13. EC2 Instance Lifecycle &amp; States</h2>
+        <ul>
+          <li><strong>States:</strong> pending to running to stopping and stopped, or shutting-down and terminated.</li>
+          <li><strong>Stopped:</strong> EBS persists and there are no compute charges. You can change instance type and modify user data while stopped.</li>
+          <li><strong>Terminated:</strong> Instance is deleted. Root EBS volume is deleted by default if Delete on Termination is enabled.</li>
+          <li><strong>Stop Protection:</strong> Prevents accidental stop.</li>
+          <li><strong>Termination Protection:</strong> Prevents accidental termination from console or API, but not every termination path.</li>
+          <li><strong>Shutdown Behavior:</strong> Controls whether OS shutdown stops or terminates the instance.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>14. Security Groups &amp; Key Pairs</h2>
+        <ul>
+          <li><strong>Security Groups:</strong> Stateful firewall at the ENI level with allow rules only. Changes take effect immediately.</li>
+          <li><strong>Key Pairs:</strong> Used for Linux SSH access or Windows admin password decryption. If you lose the private key, you must create a new one and update the instance manually.</li>
+          <li><strong>EC2 Instance Connect:</strong> Browser-based SSH using a one-time SSH key pushed to instance metadata.</li>
+          <li><strong>Systems Manager Session Manager:</strong> Access instances without SSH keys or opening port 22. Preferred exam answer for secure, auditable access.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>15. Auto Scaling Group (ASG)</h2>
+        <ul>
+          <li>Automatically adjusts the number of EC2 instances based on demand and replaces unhealthy instances.</li>
+          <li><strong>Components:</strong>
+            <ul>
+              <li><strong>Launch Template (preferred):</strong> Defines what to launch and supports versioning, mixed instances, and Spot plus On-Demand mix.</li>
+              <li><strong>Launch Configuration (legacy):</strong> Older, less flexible option being phased out.</li>
+            </ul>
+          </li>
+          <li><strong>Scaling Policies:</strong> Target Tracking, Step Scaling, Simple Scaling, Scheduled Scaling, and Predictive Scaling.</li>
+          <li><strong>Cooldown Period:</strong> Default 300 seconds to prevent rapid scaling oscillation.</li>
+          <li><strong>Warm Pool:</strong> Pre-initialized instances for faster scale-out.</li>
+          <li><strong>Instance Refresh:</strong> Gradual replacement of all instances after updates such as a new AMI.</li>
+          <li><strong>Health Checks:</strong> EC2 or ELB. ELB is recommended when instances are behind a load balancer.</li>
+          <li><strong>Termination Policy:</strong> Controls which instance is terminated during scale-in.</li>
+          <li><strong>Lifecycle Hooks:</strong> Pause launch or termination to run custom actions.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>16. Elastic Load Balancing (ELB)</h2>
+        <ul>
+          <li>Distributes traffic across multiple targets and is fully managed by AWS.</li>
+          <li><strong>Types:</strong>
+            <ul>
+              <li><strong>Application Load Balancer (ALB):</strong> Layer 7. Best for path-based and host-based routing in modern web applications.</li>
+              <li><strong>Network Load Balancer (NLB):</strong> Layer 4. Best for extreme performance, static IPs, and non-HTTP protocols.</li>
+              <li><strong>Gateway Load Balancer (GWLB):</strong> Layer 3. Best for routing traffic through third-party security appliances.</li>
+              <li><strong>Classic Load Balancer (CLB):</strong> Legacy. Know it exists but do not choose it on the exam.</li>
+            </ul>
+          </li>
+          <li><strong>Cross-Zone Load Balancing:</strong> ALB enabled by default. NLB and GWLB disabled by default.</li>
+          <li><strong>Connection Draining / Deregistration Delay:</strong> Allows in-flight requests to complete.</li>
+          <li><strong>Sticky Sessions:</strong> Keeps the same client on the same target.</li>
+          <li><strong>SSL/TLS Termination:</strong> Use ACM for certificates. ALB and NLB support SNI.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>17. ALB Advanced Features</h2>
+        <ul>
+          <li><strong>Target Groups:</strong> Logical groups of targets. ALB routes based on rules to target groups.</li>
+          <li><strong>Health Checks:</strong> Per target group configuration with path, protocol, thresholds, and intervals.</li>
+          <li><strong>Listener Rules:</strong> Conditions include path, host, method, query string, and source IP. Actions include forward, redirect, and fixed-response.</li>
+          <li><strong>Authentication:</strong> ALB can authenticate users using Cognito User Pools or any OIDC-compliant IdP.</li>
+          <li><strong>Lambda as Target:</strong> ALB can directly invoke Lambda functions.</li>
+          <li><strong>Slow Start Mode:</strong> Gradually increases traffic to newly registered targets.</li>
+          <li><strong>X-Forwarded-For Header:</strong> Preserves the client’s real IP address for the target.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>18. ELB + ASG Integration</h2>
+        <ul>
+          <li>ASG automatically registers new instances with the target group and deregisters terminated ones.</li>
+          <li>Use ELB health checks in ASG when behind a load balancer so application-level failures trigger replacement.</li>
+          <li><strong>Exam pattern:</strong> If instances are running but users see errors, switch ASG health checks from EC2 to ELB.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>19. High Availability &amp; Disaster Recovery Patterns</h2>
+        <ul>
+          <li><strong>Multi-AZ deployment:</strong> Use ALB or NLB plus ASG across multiple AZs.</li>
+          <li><strong>Multi-Region deployment:</strong> Use Route 53 with health checks and failover routing between Regions.</li>
+          <li><strong>Elastic IP failover:</strong> Move an Elastic IP from a failed instance to a standby.</li>
+          <li><strong>ENI failover:</strong> Move a secondary ENI and its private IP to a standby instance.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>20. EC2 Monitoring</h2>
+        <ul>
+          <li><strong>CloudWatch Basic Monitoring:</strong> Free metrics every five minutes.</li>
+          <li><strong>CloudWatch Detailed Monitoring:</strong> Paid metrics every one minute.</li>
+          <li><strong>CloudWatch does not collect by default:</strong> Memory utilization, disk space usage, and swap usage. Use the CloudWatch Unified Agent.</li>
+          <li><strong>Status Checks:</strong> System Status Check for AWS infrastructure issues and Instance Status Check for guest OS issues.</li>
+          <li><strong>EC2 Auto Recovery:</strong> Automatically recover an instance when a system status check fails.</li>
+          <li><strong>CloudWatch Unified Agent:</strong> Collects both metrics and logs and can be centrally configured through SSM Parameter Store.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>21. EC2 Nitro System &amp; Performance</h2>
+        <ul>
+          <li><strong>Nitro System:</strong> Next-generation virtualization platform with better performance, networking, and hardware-level security.</li>
+          <li><strong>Enhanced Networking (SR-IOV):</strong> Higher bandwidth, higher PPS, and lower latency using ENA.</li>
+          <li><strong>Elastic Fabric Adapter (EFA):</strong> For HPC and ML workloads requiring ultra-low latency inter-instance communication.</li>
+          <li><strong>Exam performance hierarchy:</strong> Instance Store &gt; io2 Block Express &gt; io2 or io1 &gt; gp3 &gt; gp2 &gt; st1 &gt; sc1.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>22. EC2 Cost Optimization Strategies</h2>
+        <ul>
+          <li><strong>Right-sizing:</strong> Use AWS Compute Optimizer to recommend better instance types based on usage.</li>
+          <li><strong>Spot Instances for fault-tolerant workloads:</strong> Use for batch processing, CI/CD runners, data analysis, and render farms.</li>
+          <li><strong>Reserved Instances or Savings Plans for steady workloads:</strong> Best for databases, core app servers, and baseline capacity.</li>
+          <li><strong>Scheduled Reserved Instances:</strong> For predictable recurring workloads that do not run 24/7.</li>
+          <li><strong>Auto Scaling:</strong> Scale in during low demand to avoid paying for idle capacity.</li>
+          <li><strong>Instance type with right purchasing option:</strong> Use Graviton instances for better price-performance when compatible.</li>
+        </ul>
+      </section>
+
+      <hr>
+
+      <section>
+        <h2>Quick Decision Matrix</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Solution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Variable, spiky workloads on a budget</td><td>T3/T3a burstable plus Unlimited mode if needed</td></tr>
+            <tr><td>HPC with low-latency inter-node communication</td><td>Cluster Placement Group plus EFA plus Enhanced Networking</td></tr>
+            <tr><td>Critical DB instances that must be on separate hardware</td><td>Spread Placement Group</td></tr>
+            <tr><td>Hadoop or Cassandra cluster needing rack-level isolation</td><td>Partition Placement Group</td></tr>
+            <tr><td>Highest possible storage IOPS, data can be lost</td><td>Instance Store</td></tr>
+            <tr><td>Persistent database storage, high IOPS</td><td>io2 or io2 Block Express (EBS)</td></tr>
+            <tr><td>Boot volume for general workload</td><td>gp3</td></tr>
+            <tr><td>Big data sequential reads, high throughput</td><td>st1 (Throughput Optimized HDD)</td></tr>
+            <tr><td>Shared file storage across multiple Linux instances</td><td>EFS</td></tr>
+            <tr><td>Move EBS volume to another AZ</td><td>Snapshot then create volume in new AZ</td></tr>
+            <tr><td>Preserve RAM state across stop or start</td><td>EC2 Hibernate</td></tr>
+            <tr><td>Secure instance access without SSH keys or port 22</td><td>Systems Manager Session Manager</td></tr>
+            <tr><td>Scale based on predictable daily traffic patterns</td><td>Scheduled Scaling plus Predictive Scaling in ASG</td></tr>
+            <tr><td>Replace all instances after AMI update</td><td>ASG Instance Refresh</td></tr>
+            <tr><td>Run custom scripts before instance termination</td><td>ASG Lifecycle Hooks</td></tr>
+            <tr><td>Microservices with path-based routing</td><td>ALB with listener rules</td></tr>
+            <tr><td>Extreme performance, static IP, non-HTTP protocol</td><td>NLB</td></tr>
+            <tr><td>Transparent network traffic inspection via appliances</td><td>GWLB</td></tr>
+            <tr><td>Multiple SSL certs on one load balancer</td><td>ALB or NLB with SNI</td></tr>
+            <tr><td>Instances are running but app is broken, not replaced</td><td>Switch ASG health check from EC2 to ELB</td></tr>
+            <tr><td>Monitor memory and disk utilization</td><td>CloudWatch Unified Agent</td></tr>
+            <tr><td>Instance fails system status check</td><td>EC2 Auto Recovery or stop and start to migrate hardware</td></tr>
+            <tr><td>Optimize instance type for cost savings</td><td>AWS Compute Optimizer</td></tr>
+            <tr><td>90 percent discount for fault-tolerant batch jobs</td><td>Spot Instances</td></tr>
+            <tr><td>Steady-state database, maximum discount</td><td>Three-year All Upfront Reserved Instance or Savings Plan</td></tr>
+            <tr><td>Per-socket or per-core software licensing (BYOL)</td><td>Dedicated Host</td></tr>
+            <tr><td>Ensure capacity in specific AZ for DR</td><td>On-Demand Capacity Reservation plus Savings Plan</td></tr>
+            <tr><td>Fast scaling for apps with long boot times</td><td>ASG Warm Pool</td></tr>
+            <tr><td>Authenticate users at the load balancer level</td><td>ALB plus Cognito or OIDC integration</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+  </main>
+</body>
+</html>
